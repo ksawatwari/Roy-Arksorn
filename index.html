@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RoyAksorn | รอยอักษร</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -21,6 +21,7 @@
             color: #1a1a1a;
             margin: 0;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .font-pattaya {
@@ -31,7 +32,7 @@
             font-family: 'Pridi', serif;
         }
 
-        /* Navbar & Button Interactions */
+        /* Navbar Interactions */
         .nav-action {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -53,7 +54,7 @@
             color: white !important;
         }
 
-        /* Dropdown Menu */
+        /* Dropdown Menu (Improved for Pro Look) */
         .nav-dropdown-content {
             display: none;
             position: absolute;
@@ -105,78 +106,109 @@
             padding-left: 35px;
         }
 
+        /* Mobile Masterpiece Fixes */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 5rem !important;
+            }
+
+            .nav-auth-desktop {
+                display: none !important;
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
         /* Image Effects */
         .image-box {
             filter: grayscale(100%) contrast(110%);
-            transition: 0.8s ease;
+            transition: 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .group:hover .image-box {
             filter: grayscale(0%) contrast(100%);
-            transform: scale(1.03);
+            transform: scale(1.05);
         }
 
         .glow-text {
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 3px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Scroll Reveal Effect */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 1s all ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="flex justify-between items-center px-10 py-8 border-b border-stone-100 sticky top-0 bg-white z-[999]">
-        <div class="font-header font-medium text-3xl tracking-tighter text-[#A31D1D]">
+    <nav
+        class="flex justify-between items-center px-6 md:px-10 py-6 md:py-8 border-b border-stone-100 sticky top-0 bg-white/90 backdrop-blur-md z-[999]">
+        <div class="font-header font-medium text-2xl md:text-3xl tracking-tighter text-[#A31D1D]">
             <a href="index.html">ROY AKSORN</a>
         </div>
 
-        <div class="flex items-center gap-10">
-
-            <div class="hidden md:flex">
+        <div class="flex items-center gap-4 md:gap-10">
+            <div class="hidden lg:flex items-center gap-10">
                 <a href="library.html"
-                    class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">
-                    งานเขียนของข้าพเจ้า
-                </a>
-            </div>
-
-            <div class="hidden md:flex text-stone-400">
+                    class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">งานเขียนของข้าพเจ้า</a>
                 <a href="#"
-                    class="font-header text-[16px] font-medium uppercase tracking-[0.2em] hover:text-[#A31D1D] transition">Archive</a>
-            </div>
+                    class="font-header text-[16px] font-medium uppercase tracking-[0.2em] text-stone-400 hover:text-[#A31D1D] transition">Archive</a>
 
-            <div class="relative group">
-                <div
-                    class="font-header text-[16px] font-medium text-stone-600 flex items-center gap-2 cursor-pointer hover:text-[#A31D1D] transition">
-                    หมวดหมู่
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                </div>
-                <div class="nav-dropdown-content">
-                    <div class="dropdown-box">
-                        <a href="#" class="dropdown-link">Originals / ออริจินัล</a>
-                        <a href="#" class="dropdown-link border-b border-stone-50">Essays / บทพิจารณ์</a>
-                        <a href="#" class="dropdown-link border-b border-stone-50">Journal / วิถีอักษร</a>
-                        <a href="#" class="dropdown-link border-b border-stone-50">Insights / พินิจภาพ</a>
-                        <a href="article.html" class="dropdown-link">Books Review / แว่วอักษร</a>
+                <div class="relative group">
+                    <div
+                        class="font-header text-[16px] font-medium text-stone-600 flex items-center gap-2 cursor-pointer hover:text-[#A31D1D] transition">
+                        หมวดหมู่ <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="nav-dropdown-content">
+                        <div class="dropdown-box">
+                            <a href="#" class="dropdown-link">Originals / ออริจินัล</a>
+                            <a href="#" class="dropdown-link border-b border-stone-50">Essays / บทพิจารณ์</a>
+                            <a href="#" class="dropdown-link border-b border-stone-50">Journal / วิถีอักษร</a>
+                            <a href="#" class="dropdown-link border-b border-stone-50">Insights / พินิจภาพ</a>
+                            <a href="article.html" class="dropdown-link">Books Review / แว่วอักษร</a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="nav-auth-group" class="flex items-center gap-8 border-l pl-10 border-stone-100 font-header">
-                <a href="login.html" class="nav-action text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
+            <div id="nav-auth-group"
+                class="nav-auth-desktop flex items-center gap-4 md:gap-8 border-l pl-6 md:pl-10 border-stone-100 font-header">
+                <a href="login.html"
+                    class="nav-action text-[16px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
                 <a href="login.html?mode=register"
-                    class="btn-join px-8 py-2.5 text-[#A31D1D] text-[18px] font-semibold rounded-full uppercase">ฝากตัว</a>
+                    class="btn-join px-4 md:px-8 py-2 md:py-2.5 text-[#A31D1D] text-[16px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</a>
             </div>
+
+            <button class="lg:hidden p-2 text-[#A31D1D]" onclick="toggleMobileMenu()">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
         </div>
     </nav>
 
     <header
-        class="relative bg-[#A31D1D] text-white py-48 px-6 text-center overflow-hidden border-b-[12px] border-stone-900">
+        class="relative bg-[#A31D1D] text-white py-32 md:py-48 px-6 text-center overflow-hidden border-b-[12px] border-stone-900">
         <h2
-            class="relative z-10 font-pattaya text-[7rem] md:text-[10rem] mb-2 leading-none tracking-tighter text-white">
+            class="relative z-10 font-pattaya hero-title text-[5rem] md:text-[10rem] mb-2 leading-none tracking-tighter text-white">
             <span class="opacity-40">รอย</span>อักษร
         </h2>
-        <p class="relative z-10 font-header text-lg md:text-xl font-light tracking-[0.2em] mb-12 text-white">
+        <p class="relative z-10 font-header text-md md:text-xl font-light tracking-[0.2em] mb-12 text-white/80">
             เมื่อตัวอักษร... เริ่มเล่าเรื่อง</p>
         <div
             class="relative z-10 inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/20">
@@ -184,45 +216,56 @@
             <p class="font-header text-sm tracking-wide text-white/90">ขณะนี้ออนไลน์ <span id="online-now"
                     class="font-bold text-white text-lg mx-0.5">28</span> คน</p>
         </div>
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <div class="absolute top-10 left-10 text-8xl font-pattaya rotate-12">อ</div>
+            <div class="absolute bottom-10 right-20 text-9xl font-pattaya -rotate-12">ร</div>
+        </div>
     </header>
 
     <main>
-        <section class="flex flex-wrap group border-b border-stone-100">
-            <div class="w-full md:w-1/2 overflow-hidden bg-stone-900 h-[500px] md:h-[650px]">
+        <section class="flex flex-wrap group border-b border-stone-100 reveal">
+            <div class="w-full md:w-1/2 overflow-hidden bg-stone-900 h-[400px] md:h-[650px]">
                 <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1500"
                     class="image-box w-full h-full object-cover">
             </div>
-            <div class="w-full md:w-1/2 bg-white flex flex-col justify-center p-12 md:p-24">
-                <p class="text-[12px] font-bold tracking-[0.5em] mb-8 uppercase text-[#A31D1D]">Books Review / แว่วอักษร
-                </p>
-                <h3 class="font-header text-5xl mb-10 leading-tight">รอยจำในแดนหิมะ</h3>
-                <p class="mb-12 text-xl font-light leading-relaxed text-stone-500 italic">
+            <div class="w-full md:w-1/2 bg-white flex flex-col justify-center p-8 md:p-24">
+                <p class="text-[10px] md:text-[12px] font-bold tracking-[0.5em] mb-6 uppercase text-[#A31D1D]">Books
+                    Review / แว่วอักษร</p>
+                <h3 class="font-header text-4xl md:text-5xl mb-8 leading-tight text-stone-900">รอยจำในแดนหิมะ</h3>
+                <p class="mb-10 text-lg md:text-xl font-light leading-relaxed text-stone-500 italic">
                     "สัมผัสเสียงกระซิบจากหน้าที่ขาดหาย ผ่านการเดินทางที่ทิ้งรอยไว้เพียงความเงียบ"</p>
                 <a href="article.html"
-                    class="text-[#A31D1D] font-header text-2xl border-b-2 border-[#A31D1D] w-fit pb-1 hover:pr-10 transition-all">อ่านต่อตามรอยอักษร
+                    class="text-[#A31D1D] font-header text-xl md:text-2xl border-b-2 border-[#A31D1D] w-fit pb-1 hover:pr-10 transition-all">อ่านต่อตามรอยอักษร
                     →</a>
             </div>
         </section>
 
-        <section class="py-32 px-10 bg-[#fdfcf8] border-b border-stone-100">
+        <section class="py-20 md:py-32 px-6 md:px-10 bg-[#fdfcf8] border-b border-stone-100 reveal">
             <div class="max-w-6xl mx-auto">
-                <div class="text-center mb-20">
-                    <h2 class="font-header text-4xl text-[#A31D1D] mb-4 uppercase tracking-widest">คติอักษร</h2>
+                <div class="text-center mb-16 md:mb-20">
+                    <h2 class="font-header text-3xl md:text-4xl text-[#A31D1D] mb-4 uppercase tracking-widest">คติอักษร
+                    </h2>
                     <div class="w-12 h-[1px] bg-stone-300 mx-auto"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
-                    <div class="text-center">
-                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">ความสงบ</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-20">
+                    <div class="text-center group">
+                        <h4
+                            class="font-header text-xl mb-4 tracking-widest text-stone-800 group-hover:text-[#A31D1D] transition-colors">
+                            ความสงบ</h4>
                         <p class="font-light text-stone-500 leading-relaxed text-lg">คัดสรรถ้อยคำในจังหวะที่เชื่องช้า
                             เพื่อให้จิตใจได้พักผ่อนจากการเร่งรีบ</p>
                     </div>
-                    <div class="text-center">
-                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">การพินิจ</h4>
+                    <div class="text-center group">
+                        <h4
+                            class="font-header text-xl mb-4 tracking-widest text-stone-800 group-hover:text-[#A31D1D] transition-colors">
+                            การพินิจ</h4>
                         <p class="font-light text-stone-500 leading-relaxed text-lg">
                             มองลึกในความหมายที่ซ่อนอยู่ระหว่างบรรทัด มากกว่าเพียงการอ่าน</p>
                     </div>
-                    <div class="text-center">
-                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">รอยจารึก</h4>
+                    <div class="text-center group">
+                        <h4
+                            class="font-header text-xl mb-4 tracking-widest text-stone-800 group-hover:text-[#A31D1D] transition-colors">
+                            รอยจารึก</h4>
                         <p class="font-light text-stone-500 leading-relaxed text-lg">ทุกตัวอักษรคือการบันทึกจิตวิญญาณ
                             ที่จะคงอยู่แม้กาลเวลาจะผ่านไป</p>
                     </div>
@@ -230,47 +273,46 @@
             </div>
         </section>
 
-        <section class="bg-stone-900 py-36 px-10 border-b border-stone-800 text-white text-center">
+        <section
+            class="bg-stone-900 py-24 md:py-36 px-6 md:px-10 border-b border-stone-800 text-white text-center reveal">
             <div class="max-w-5xl mx-auto">
                 <div
-                    class="glow-text text-xl md:text-2xl flex flex-wrap justify-center items-baseline gap-3 uppercase mb-6 font-light italic">
-                    <span>ปัจจุบันมีผู้ใช้งานเว็บไซต์รอยอักษร</span>
+                    class="glow-text text-lg md:text-2xl flex flex-wrap justify-center items-baseline gap-3 uppercase mb-6 font-light italic">
+                    <span>ปัจจุบันมีผู้ใช้งานรอยอักษร</span>
                     <span id="total-users"
-                        class="font-header text-5xl not-italic text-white min-w-[120px] border-b border-white/10">0</span>
+                        class="font-header text-4xl md:text-6xl not-italic text-white min-w-[120px] border-b border-white/10">0</span>
                     <span>ราย</span>
                 </div>
-                <div class="opacity-40 text-sm md:text-base tracking-[0.3em] font-light uppercase">RoyAksorn
-                    ขอขอบคุณ student ทุกท่าน</div>
+                <div class="opacity-40 text-[10px] md:text-sm tracking-[0.3em] font-light uppercase">RoyAksorn ขอขอบคุณ
+                    student ทุกท่าน</div>
             </div>
         </section>
     </main>
 
-    <footer class="bg-stone-950 text-stone-400 py-24 text-center">
-        <div class="flex justify-center gap-10 mb-12">
-            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+    <footer class="bg-stone-950 text-stone-400 py-20 text-center">
+        <div class="flex justify-center gap-6 md:gap-10 mb-12">
+            <a href="#" class="group flex flex-col items-center gap-3">
                 <div
-                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     FB</div>
                 <span
-                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">FACEBOOK</span>
+                    class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">FACEBOOK</span>
             </a>
-            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+            <a href="#" class="group flex flex-col items-center gap-3">
                 <div
-                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     X</div>
-                <span
-                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">TWITTER</span>
+                <span class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">TWITTER</span>
             </a>
-            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+            <a href="#" class="group flex flex-col items-center gap-3">
                 <div
-                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     IG</div>
                 <span
-                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">INSTAGRAM</span>
+                    class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">INSTAGRAM</span>
             </a>
         </div>
-        <div class="w-12 h-[1px] bg-stone-800 mx-auto mb-10"></div>
-        <p class="text-[12px] tracking-[0.8em] uppercase font-bold opacity-30">RoyAksorn / 2026</p>
+        <p class="text-[10px] tracking-[0.8em] uppercase font-bold opacity-20">RoyAksorn / 2026</p>
     </footer>
 
     <script type="module">
@@ -292,9 +334,9 @@
             if (user) {
                 const displayName = user.email.split('@')[0];
                 document.getElementById('nav-auth-group').innerHTML = `
-                    <div class="flex items-center gap-6">
-                        <span class="text-stone-400 italic font-light">สวัสดียามเย็น, <b class="text-stone-700 font-medium">${displayName}</b></span>
-                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-xs tracking-widest border-b border-[#A31D1D]/20 hover:text-stone-900 transition-all">Logout</button>
+                    <div class="flex items-center gap-4 md:gap-6">
+                        <span class="hidden sm:inline text-stone-400 italic font-light">สวัสดียามเย็น, <b class="text-stone-700 font-medium">${displayName}</b></span>
+                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-[10px] md:text-xs tracking-widest border-b border-[#A31D1D]/20 hover:text-stone-900 transition-all">Logout</button>
                     </div>`;
                 document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
             }
@@ -302,6 +344,21 @@
     </script>
 
     <script>
+        // Reveal on scroll
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+
+        // Stats counter (Original Logic Intact)
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
             let startTimestamp = null;
@@ -324,6 +381,7 @@
         }, { threshold: 0.5 });
 
         document.addEventListener("DOMContentLoaded", () => {
+            reveal(); // Initial check
             const statTarget = document.getElementById("total-users");
             if (statTarget) observer.observe(statTarget);
 
@@ -334,6 +392,11 @@
                 onlineNow.innerText = Math.max(15, current + change);
             }, 4000);
         });
+
+        // Mobile Menu Placeholder (For further expansion)
+        function toggleMobileMenu() {
+            alert("เมนูส่วนตัวกำลังถูกจารึก... ระบบนำทางหลักยังทำงานได้ผ่านปุ่ม 'ฝากตัว' และ 'งานเขียน'");
+        }
     </script>
 </body>
 
