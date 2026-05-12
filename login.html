@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่รอยอักษร</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anuphan:wght@200;300;400;600&family=Pridi:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --zen-red: #A31D1D;
+        }
+
+        body {
+            font-family: 'Anuphan', sans-serif;
+            background-color: #fdfcf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .font-header {
+            font-family: 'Pridi', serif;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 3.5rem 3rem;
+            border-radius: 2px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 450px;
+            border-top: 10px solid var(--zen-red);
+        }
+
+        input {
+            border-bottom: 1px solid #eee !important;
+            transition: all 0.3s;
+            border-radius: 0 !important;
+        }
+
+        input:focus {
+            border-bottom-color: var(--zen-red) !important;
+            outline: none;
+        }
+
+        .google-btn {
+            transition: all 0.3s;
+            border: 1px solid #eee;
+        }
+
+        .google-btn:hover {
+            background-color: #fcfcfc;
+            border-color: #ddd;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-card">
+        <div class="text-center mb-10">
+            <h1 id="auth-title" class="font-header text-3xl tracking-tighter text-[#A31D1D] mb-2 uppercase">ล็อกอิน</h1>
+            <p id="auth-subtitle" class="text-stone-400 text-sm uppercase tracking-widest">
+                ร่วมจารึกรอยอักษรต่อจากที่ค้างไว้</p>
+        </div>
+
+        <button id="google-login"
+            class="google-btn w-full py-3 px-4 flex items-center justify-center gap-3 mb-8 bg-white text-stone-600 rounded-md shadow-sm">
+            <svg class="w-5 h-5" viewBox="0 0 48 48">
+                <path fill="#FFC107"
+                    d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z">
+                </path>
+                <path fill="#FF3D00"
+                    d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z">
+                </path>
+                <path fill="#4CAF50"
+                    d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z">
+                </path>
+                <path fill="#1976D2"
+                    d="M43.611,20.083L43.611,20.083L42,20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z">
+                </path>
+            </svg>
+            <span class="font-medium">ดำเนินการต่อด้วย Google</span>
+        </button>
+
+        <div class="relative flex py-5 items-center mb-4">
+            <div class="flex-grow border-t border-stone-100"></div>
+            <span class="flex-shrink mx-4 text-stone-300 text-xs uppercase tracking-widest">หรือ</span>
+            <div class="flex-grow border-t border-stone-100"></div>
+        </div>
+
+        <div id="login-section">
+            <form id="login-form" class="space-y-8">
+                <div>
+                    <label
+                        class="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-bold">อีเมล</label>
+                    <input type="email" id="login-email" class="w-full py-2 bg-transparent border-none text-lg"
+                        placeholder="your@email.com" required>
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-bold">รหัสผ่าน</label>
+                    <input type="password" id="login-password" class="w-full py-2 bg-transparent border-none text-lg"
+                        placeholder="••••••••" required>
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-[#A31D1D] text-white font-header uppercase tracking-[0.2em] hover:bg-stone-900 transition-all shadow-lg">เข้าสู่รอยอักษร</button>
+            </form>
+            <div class="mt-10 text-center">
+                <p class="text-stone-400 text-sm font-light italic">ยังไม่ได้ฝากตัวกับรอยอักษร? <button id="go-to-reg"
+                        class="text-[#A31D1D] font-bold border-b border-[#A31D1D]/20 hover:border-[#A31D1D] transition-all ml-1">คลิกที่นี่</button>
+                </p>
+            </div>
+        </div>
+
+        <div id="register-section" class="hidden">
+            <form id="register-form" class="space-y-8">
+                <div>
+                    <label
+                        class="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-bold">อีเมลสำหรับฝากตัว</label>
+                    <input type="email" id="register-email" class="w-full py-2 bg-transparent border-none text-lg"
+                        placeholder="your@email.com" required>
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-bold">รหัสผ่านใหม่</label>
+                    <input type="password" id="register-password" class="w-full py-2 bg-transparent border-none text-lg"
+                        placeholder="••••••••" required>
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-stone-900 text-white font-header uppercase tracking-[0.2em] hover:bg-black transition-all shadow-lg">ลงทะเบียน</button>
+            </form>
+            <div class="mt-10 text-center">
+                <p class="text-stone-400 text-sm font-light">เป็นส่วนหนึ่งกับเราอยู่แล้ว? <button id="go-to-login"
+                        class="text-[#A31D1D] font-bold border-b border-[#A31D1D]/20 hover:border-[#A31D1D] transition-all ml-1">กลับไปล็อกอิน</button>
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-12 text-center">
+            <a href="index.html"
+                class="text-stone-300 text-[10px] uppercase tracking-[0.3em] hover:text-stone-500 transition">←
+                กลับสู่หน้าหลัก</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
+            authDomain: "royarksorn.firebaseapp.com",
+            projectId: "royarksorn",
+            storageBucket: "royarksorn.firebasestorage.app",
+            messagingSenderId: "6587270930",
+            appId: "1:6587270930:web:cef1d91e936b09478815cb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // ฟังก์ชันสร้างข้อมูลเบื้องต้นใน Firestore
+        async function createInitialUser(user) {
+            const userRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userRef);
+            if (!docSnap.exists()) {
+                await setDoc(userRef, {
+                    displayName: user.displayName || "ผู้มาเยือน",
+                    currentTitle: "ผู้มาเยือน",
+                    avatarURL: user.photoURL || "assets/images/default-avatar.png",
+                    createdAt: new Date(),
+                    setupComplete: false // สำคัญ: เอาไว้เช็คว่าต้องไปหน้า Setup ไหม
+                });
+            }
+        }
+
+        const loginSec = document.getElementById('login-section');
+        const regSec = document.getElementById('register-section');
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+
+        const showReg = () => {
+            loginSec.classList.add('hidden'); regSec.classList.remove('hidden');
+            title.innerText = "ฝากตัวกับรอยอักษร"; subtitle.innerText = "เริ่มต้นการเดินทางครั้งใหม่";
+        };
+        const showLogin = () => {
+            regSec.classList.add('hidden'); loginSec.classList.remove('hidden');
+            title.innerText = "ล็อกอิน"; subtitle.innerText = "ร่วมจารึกรอยอักษรต่อจากที่ค้างไว้";
+        };
+
+        document.getElementById('go-to-reg').onclick = showReg;
+        document.getElementById('go-to-login').onclick = showLogin;
+
+        // --- Logic: Google Login ---
+        document.getElementById('google-login').onclick = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                await createInitialUser(result.user);
+                window.location.href = 'setup-profile.html';
+            } catch (e) { console.error(e); }
+        };
+
+        // --- Logic: Email Login ---
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+                window.location.href = 'index.html';
+            } catch (e) { alert("ข้อมูลไม่ถูกต้อง"); }
+        };
+
+        // --- Logic: Email Register ---
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            try {
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                await createInitialUser(result.user);
+                alert("ฝากตัวสำเร็จ! ขั้นตอนต่อไปคือการจารึกนามของคุณ");
+                window.location.href = 'setup-profile.html';
+            } catch (err) { alert(err.message); }
+        };
+
+        // ตรวจสอบ Mode จาก URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'register') showReg();
+    </script>
+</body>
+
+</html>

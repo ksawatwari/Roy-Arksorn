@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รอยอักษร | คลังงานเขียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;500;700&family=Pridi:wght@300;400&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background: #fdfdfd;
+            font-family: 'Anuphan', sans-serif;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(163, 29, 29, 0.1);
+        }
+
+        .cover-preview {
+            height: 160px;
+            background: #f9f9f9;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        /* --- อัปเกรดความสวยงามกรณีไม่มีรูปปก --- */
+        .no-cover-bg {
+            background: linear-gradient(135deg, #f5f5f5 0%, #ececec 100%);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            border: 1px solid #eee;
+        }
+
+        /* --- Custom Modal Design --- */
+        #delete-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #delete-modal.active {
+            display: flex;
+        }
+
+        #delete-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-btn {
+            padding: 12px 35px;
+            border-radius: 100px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ปุ่มปฏิเสธ (ไม่ใช่) */
+        .btn-no {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        /* ปุ่มยืนยัน (ใช่) */
+        .btn-yes {
+            background: #fff;
+            color: #A31D1D;
+            border: 1px solid #f0f0f0;
+        }
+
+        /* ลูกเล่นเรืองแสงและเปลี่ยนเป็นสีแดงเมื่อชี้ */
+        .modal-btn:hover {
+            background: #A31D1D !important;
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(163, 29, 29, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="delete-modal">
+        <div class="modal-content">
+            <div class="mb-6 inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full">
+                <svg width="24" height="24" fill="#A31D1D" viewBox="0 0 24 24">
+                    <path
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        stroke="#A31D1D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">ลบลบล้างรอยอักษร?</h2>
+            <p class="text-gray-400 mb-8 font-light">เมื่อลบแล้ว รอยจารึกนี้จะสูญหายไปตลอดกาล คุณแน่ใจหรือไม่?</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="closeDeleteModal()" class="modal-btn btn-no text-sm">เก็บไว้ก่อน</button>
+                <button id="confirm-delete-btn" class="modal-btn btn-yes text-sm">ยืนยันการลบ</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="flex justify-between items-center px-10 py-6 border-b bg-white sticky top-0 z-50">
+        <div class="text-xl font-bold text-[#A31D1D] tracking-tighter">ROY AKSORN</div>
+        <div class="flex gap-8 items-center text-sm font-medium text-gray-600">
+            <a href="index.html" class="hover:text-[#A31D1D]">หน้าแรก</a>
+            <a href="#" class="text-[#A31D1D] font-bold">ARCHIVE</a>
+            <button onclick="location.href='writer.html'"
+                class="border border-[#A31D1D] text-[#A31D1D] px-6 py-2 rounded-full hover:bg-[#A31D1D] hover:text-white transition">เขียนเรื่องใหม่</button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto py-16 px-6">
+        <div class="flex justify-between items-end mb-12">
+            <div>
+                <h1 class="text-5xl font-bold text-gray-900 mb-2">คลังรอยอักษร</h1>
+                <p class="text-gray-500 italic">"เมื่อตัวอักษร... เริ่มเล่าเรื่อง"</p>
+            </div>
+            <div class="text-right">
+                <span id="doc-count" class="text-4xl font-light text-[#A31D1D]">0</span>
+                <p class="text-xs uppercase tracking-widest text-gray-400">ผลงานทั้งหมด</p>
+            </div>
+        </div>
+
+        <div id="library-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        </div>
+    </div>
+
+    <script>
+        let docIdToDelete = null;
+
+        function renderLibrary() {
+            const grid = document.getElementById('library-grid');
+            const docs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+            document.getElementById('doc-count').innerText = docs.length;
+
+            grid.innerHTML = '';
+            if (docs.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-300 border-2 border-dashed rounded-3xl">ยังไม่มีผลงานที่ถูกจารึกไว้</div>`;
+                return;
+            }
+
+            docs.sort((a, b) => b.updated - a.updated).forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'bg-white border p-6 rounded-[32px] card-hover transition-all cursor-pointer flex flex-col';
+                card.onclick = () => {
+                    location.href = `writer.html?id=${doc.id}`;
+                };
+
+                // ปรับเงื่อนไขการแสดงผลรูปปกให้สวยขึ้น
+                const coverContent = doc.cover
+                    ? `<img src="${doc.cover}" class="w-full h-full object-cover">`
+                    : `<div class="no-cover-bg">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mb-2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        <span class="text-[9px] uppercase tracking-[0.2em] font-bold">ปราศจากรอยจารึก</span>
+                       </div>`;
+
+                card.innerHTML = `
+                    <div class="cover-preview">
+                        ${coverContent}
+                    </div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-1 border-t-4 border-[#A31D1D]"></div>
+                        <button onclick="openDeleteModal(event, ${doc.id})" class="text-gray-300 hover:text-red-500 transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3 line-clamp-1">${doc.title || 'Untitled'}</h3>
+                    <p class="text-gray-400 text-sm line-clamp-2 mb-4 font-light">${doc.excerpt || 'รอยจารึกที่ยังไม่มีเนื้อหา...'}</p>
+                    <div class="mt-auto pt-4 border-t text-[10px] text-gray-400 flex justify-between uppercase tracking-wider">
+                        <span>Last Update</span>
+                        <span>${new Date(doc.updated).toLocaleDateString('th-TH')}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- ระบบเปิด/ปิด Modal และลบข้อมูล ---
+        function openDeleteModal(e, id) {
+            e.stopPropagation();
+            docIdToDelete = id;
+            const modal = document.getElementById('delete-modal');
+            modal.classList.add('active');
+
+            // ผูกฟังก์ชันลบเข้ากับปุ่มยืนยัน
+            document.getElementById('confirm-delete-btn').onclick = () => {
+                confirmDelete();
+            };
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            modal.classList.remove('active');
+            docIdToDelete = null;
+        }
+
+        function confirmDelete() {
+            if (docIdToDelete !== null) {
+                let docs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+                docs = docs.filter(d => d.id !== docIdToDelete);
+                localStorage.setItem('archivist_docs', JSON.stringify(docs));
+                closeDeleteModal();
+                renderLibrary();
+            }
+        }
+
+        // ปิด modal เมื่อคลิกพื้นหลัง
+        window.onclick = function (event) {
+            const modal = document.getElementById('delete-modal');
+            if (event.target == modal) {
+                closeDeleteModal();
+            }
+        }
+
+        window.onload = renderLibrary;
+    </script>
+</body>
+
+</html>

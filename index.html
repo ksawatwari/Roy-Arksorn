@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoyAksorn | รอยอักษร</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anuphan:wght@200;300;400;600&family=Pattaya&family=Pridi:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --zen-red: #A31D1D;
+            --zen-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Anuphan', sans-serif;
+            background-color: var(--zen-white);
+            color: #1a1a1a;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .font-pattaya {
+            font-family: 'Pattaya', sans-serif;
+        }
+
+        .font-header {
+            font-family: 'Pridi', serif;
+        }
+
+        /* Navbar & Button Interactions */
+        .nav-action {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .nav-action:hover {
+            color: var(--zen-red) !important;
+            transform: scale(1.1);
+        }
+
+        .btn-join {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #A31D1D;
+        }
+
+        .btn-join:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(163, 29, 29, 0.3);
+            background-color: var(--zen-red);
+            color: white !important;
+        }
+
+        /* Dropdown Menu */
+        .nav-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            min-width: 280px;
+            z-index: 1000;
+            padding-top: 15px;
+        }
+
+        .dropdown-box {
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+
+        .group:hover .nav-dropdown-content {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-link {
+            display: block;
+            padding: 18px 24px;
+            color: #555;
+            font-family: 'Pridi', serif;
+            font-size: 15px;
+            border-bottom: 1px solid #f8f8f8;
+            transition: 0.2s;
+        }
+
+        .dropdown-link:hover {
+            background-color: #fffafa;
+            color: var(--zen-red);
+            padding-left: 35px;
+        }
+
+        /* Image Effects */
+        .image-box {
+            filter: grayscale(100%) contrast(110%);
+            transition: 0.8s ease;
+        }
+
+        .group:hover .image-box {
+            filter: grayscale(0%) contrast(100%);
+            transform: scale(1.03);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 3px rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="flex justify-between items-center px-10 py-8 border-b border-stone-100 sticky top-0 bg-white z-[999]">
+        <div class="font-header font-medium text-3xl tracking-tighter text-[#A31D1D]">
+            <a href="index.html">ROY AKSORN</a>
+        </div>
+
+        <div class="flex items-center gap-10">
+
+            <div class="hidden md:flex">
+                <a href="library.html"
+                    class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">
+                    งานเขียนของข้าพเจ้า
+                </a>
+            </div>
+
+            <div class="hidden md:flex text-stone-400">
+                <a href="#"
+                    class="font-header text-[16px] font-medium uppercase tracking-[0.2em] hover:text-[#A31D1D] transition">Archive</a>
+            </div>
+
+            <div class="relative group">
+                <div
+                    class="font-header text-[16px] font-medium text-stone-600 flex items-center gap-2 cursor-pointer hover:text-[#A31D1D] transition">
+                    หมวดหมู่
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 9l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </div>
+                <div class="nav-dropdown-content">
+                    <div class="dropdown-box">
+                        <a href="#" class="dropdown-link">Originals / ออริจินัล</a>
+                        <a href="#" class="dropdown-link border-b border-stone-50">Essays / บทพิจารณ์</a>
+                        <a href="#" class="dropdown-link border-b border-stone-50">Journal / วิถีอักษร</a>
+                        <a href="#" class="dropdown-link border-b border-stone-50">Insights / พินิจภาพ</a>
+                        <a href="article.html" class="dropdown-link">Books Review / แว่วอักษร</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nav-auth-group" class="flex items-center gap-8 border-l pl-10 border-stone-100 font-header">
+                <a href="login.html" class="nav-action text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
+                <a href="login.html?mode=register"
+                    class="btn-join px-8 py-2.5 text-[#A31D1D] text-[18px] font-semibold rounded-full uppercase">ฝากตัว</a>
+            </div>
+        </div>
+    </nav>
+
+    <header
+        class="relative bg-[#A31D1D] text-white py-48 px-6 text-center overflow-hidden border-b-[12px] border-stone-900">
+        <h2
+            class="relative z-10 font-pattaya text-[7rem] md:text-[10rem] mb-2 leading-none tracking-tighter text-white">
+            <span class="opacity-40">รอย</span>อักษร
+        </h2>
+        <p class="relative z-10 font-header text-lg md:text-xl font-light tracking-[0.2em] mb-12 text-white">
+            เมื่อตัวอักษร... เริ่มเล่าเรื่อง</p>
+        <div
+            class="relative z-10 inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/20">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
+            <p class="font-header text-sm tracking-wide text-white/90">ขณะนี้ออนไลน์ <span id="online-now"
+                    class="font-bold text-white text-lg mx-0.5">28</span> คน</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="flex flex-wrap group border-b border-stone-100">
+            <div class="w-full md:w-1/2 overflow-hidden bg-stone-900 h-[500px] md:h-[650px]">
+                <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1500"
+                    class="image-box w-full h-full object-cover">
+            </div>
+            <div class="w-full md:w-1/2 bg-white flex flex-col justify-center p-12 md:p-24">
+                <p class="text-[12px] font-bold tracking-[0.5em] mb-8 uppercase text-[#A31D1D]">Books Review / แว่วอักษร
+                </p>
+                <h3 class="font-header text-5xl mb-10 leading-tight">รอยจำในแดนหิมะ</h3>
+                <p class="mb-12 text-xl font-light leading-relaxed text-stone-500 italic">
+                    "สัมผัสเสียงกระซิบจากหน้าที่ขาดหาย ผ่านการเดินทางที่ทิ้งรอยไว้เพียงความเงียบ"</p>
+                <a href="article.html"
+                    class="text-[#A31D1D] font-header text-2xl border-b-2 border-[#A31D1D] w-fit pb-1 hover:pr-10 transition-all">อ่านต่อตามรอยอักษร
+                    →</a>
+            </div>
+        </section>
+
+        <section class="py-32 px-10 bg-[#fdfcf8] border-b border-stone-100">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-20">
+                    <h2 class="font-header text-4xl text-[#A31D1D] mb-4 uppercase tracking-widest">คติอักษร</h2>
+                    <div class="w-12 h-[1px] bg-stone-300 mx-auto"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
+                    <div class="text-center">
+                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">ความสงบ</h4>
+                        <p class="font-light text-stone-500 leading-relaxed text-lg">คัดสรรถ้อยคำในจังหวะที่เชื่องช้า
+                            เพื่อให้จิตใจได้พักผ่อนจากการเร่งรีบ</p>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">การพินิจ</h4>
+                        <p class="font-light text-stone-500 leading-relaxed text-lg">
+                            มองลึกในความหมายที่ซ่อนอยู่ระหว่างบรรทัด มากกว่าเพียงการอ่าน</p>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="font-header text-xl mb-6 tracking-widest text-stone-800">รอยจารึก</h4>
+                        <p class="font-light text-stone-500 leading-relaxed text-lg">ทุกตัวอักษรคือการบันทึกจิตวิญญาณ
+                            ที่จะคงอยู่แม้กาลเวลาจะผ่านไป</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-stone-900 py-36 px-10 border-b border-stone-800 text-white text-center">
+            <div class="max-w-5xl mx-auto">
+                <div
+                    class="glow-text text-xl md:text-2xl flex flex-wrap justify-center items-baseline gap-3 uppercase mb-6 font-light italic">
+                    <span>ปัจจุบันมีผู้ใช้งานเว็บไซต์รอยอักษร</span>
+                    <span id="total-users"
+                        class="font-header text-5xl not-italic text-white min-w-[120px] border-b border-white/10">0</span>
+                    <span>ราย</span>
+                </div>
+                <div class="opacity-40 text-sm md:text-base tracking-[0.3em] font-light uppercase">RoyAksorn
+                    ขอขอบคุณ student ทุกท่าน</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-950 text-stone-400 py-24 text-center">
+        <div class="flex justify-center gap-10 mb-12">
+            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+                <div
+                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    FB</div>
+                <span
+                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">FACEBOOK</span>
+            </a>
+            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+                <div
+                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    X</div>
+                <span
+                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">TWITTER</span>
+            </a>
+            <a href="#" class="group flex flex-col items-center gap-3 transition-all">
+                <div
+                    class="w-14 h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all">
+                    IG</div>
+                <span
+                    class="text-[10px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">INSTAGRAM</span>
+            </a>
+        </div>
+        <div class="w-12 h-[1px] bg-stone-800 mx-auto mb-10"></div>
+        <p class="text-[12px] tracking-[0.8em] uppercase font-bold opacity-30">RoyAksorn / 2026</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
+            authDomain: "royarksorn.firebaseapp.com",
+            projectId: "royarksorn",
+            storageBucket: "royarksorn.firebasestorage.app",
+            messagingSenderId: "6587270930",
+            appId: "1:6587270930:web:cef1d91e936b09478815cb"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const displayName = user.email.split('@')[0];
+                document.getElementById('nav-auth-group').innerHTML = `
+                    <div class="flex items-center gap-6">
+                        <span class="text-stone-400 italic font-light">สวัสดียามเย็น, <b class="text-stone-700 font-medium">${displayName}</b></span>
+                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-xs tracking-widest border-b border-[#A31D1D]/20 hover:text-stone-900 transition-all">Logout</button>
+                    </div>`;
+                document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
+            }
+        });
+    </script>
+
+    <script>
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateValue("total-users", 0, 1248, 2000);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const statTarget = document.getElementById("total-users");
+            if (statTarget) observer.observe(statTarget);
+
+            const onlineNow = document.getElementById('online-now');
+            setInterval(() => {
+                let current = parseInt(onlineNow.innerText);
+                let change = Math.floor(Math.random() * 3) - 1;
+                onlineNow.innerText = Math.max(15, current + change);
+            }, 4000);
+        });
+    </script>
+</body>
+
+</html>
