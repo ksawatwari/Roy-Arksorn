@@ -54,7 +54,7 @@
             color: white !important;
         }
 
-        /* Dropdown Menu (Improved for Pro Look) */
+        /* Dropdown Menu (Desktop) */
         .nav-dropdown-content {
             display: none;
             position: absolute;
@@ -106,18 +106,30 @@
             padding-left: 35px;
         }
 
-        /* Mobile Masterpiece Fixes */
+        /* Mobile Side Menu Styles */
+        #mobile-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        #mobile-panel {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #fcfcfc;
+        }
+
+        .submenu.active {
+            max-height: 500px;
+        }
+
+        /* Mobile Fixes */
         @media (max-width: 768px) {
             .hero-title {
                 font-size: 5rem !important;
-            }
-
-            .nav-auth-desktop {
-                display: none !important;
-            }
-
-            .mobile-menu-btn {
-                display: block !important;
             }
         }
 
@@ -152,19 +164,48 @@
 
 <body>
 
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-[1001] opacity-0 pointer-events-none"
+        onclick="toggleMobileMenu()"></div>
+    <div id="mobile-panel"
+        class="fixed top-0 right-0 h-full w-[80%] max-w-[350px] bg-white z-[1002] translate-x-full shadow-2xl p-8 font-header overflow-y-auto">
+        <div class="flex justify-between items-center mb-10">
+            <span class="text-[#A31D1D] font-bold text-xl">เมนู</span>
+            <button onclick="toggleMobileMenu()" class="text-stone-400">✕ ปิด</button>
+        </div>
+        <div class="flex flex-col gap-6">
+            <a href="login.html" class="text-2xl text-stone-800">ล็อกอิน</a>
+            <a href="login.html?mode=register" class="text-2xl text-[#A31D1D] font-bold">ฝากตัว</a>
+            <hr class="border-stone-100">
+            <div>
+                <button onclick="toggleSubmenu()"
+                    class="text-2xl text-stone-800 flex justify-between items-center w-full">
+                    หมวดหมู่ <span id="arrow">↓</span>
+                </button>
+                <div id="mobile-submenu" class="submenu flex flex-col pl-4 mt-4 gap-4 border-l-2 border-stone-100">
+                    <a href="#" class="text-stone-500">Originals / ออริจินัล</a>
+                    <a href="#" class="text-stone-500">Essays / บทพิจารณ์</a>
+                    <a href="#" class="text-stone-500">Journal / วิถีอักษร</a>
+                    <a href="#" class="text-stone-500">Insights / พินิจภาพ</a>
+                    <a href="article.html" class="text-stone-500">Books Review / แว่วอักษร</a>
+                </div>
+            </div>
+            <a href="library.html" class="text-2xl text-stone-800">งานเขียนของข้าพเจ้า</a>
+            <a href="#" class="text-2xl text-stone-400">เกี่ยวกับ (เร็วๆ นี้)</a>
+        </div>
+    </div>
+
     <nav
         class="flex justify-between items-center px-6 md:px-10 py-6 md:py-8 border-b border-stone-100 sticky top-0 bg-white/90 backdrop-blur-md z-[999]">
         <div class="font-header font-medium text-2xl md:text-3xl tracking-tighter text-[#A31D1D]">
             <a href="index.html">ROY AKSORN</a>
         </div>
 
-        <div class="flex items-center gap-4 md:gap-10">
+        <div class="flex items-center gap-2 md:gap-10">
             <div class="hidden lg:flex items-center gap-10">
                 <a href="library.html"
                     class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">งานเขียนของข้าพเจ้า</a>
                 <a href="#"
                     class="font-header text-[16px] font-medium uppercase tracking-[0.2em] text-stone-400 hover:text-[#A31D1D] transition">Archive</a>
-
                 <div class="relative group">
                     <div
                         class="font-header text-[16px] font-medium text-stone-600 flex items-center gap-2 cursor-pointer hover:text-[#A31D1D] transition">
@@ -185,15 +226,14 @@
                 </div>
             </div>
 
-            <div id="nav-auth-group"
-                class="nav-auth-desktop flex items-center gap-4 md:gap-8 border-l pl-6 md:pl-10 border-stone-100 font-header">
+            <div id="nav-auth-group" class="flex items-center gap-3 md:gap-8 font-header">
                 <a href="login.html"
-                    class="nav-action text-[16px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
+                    class="nav-action text-[14px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
                 <a href="login.html?mode=register"
-                    class="btn-join px-4 md:px-8 py-2 md:py-2.5 text-[#A31D1D] text-[16px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</a>
+                    class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</a>
             </div>
 
-            <button class="lg:hidden p-2 text-[#A31D1D]" onclick="toggleMobileMenu()">
+            <button class="p-1 text-[#A31D1D] hover:scale-110 transition" onclick="toggleMobileMenu()">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
                     </path>
@@ -295,21 +335,16 @@
                 <div
                     class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     FB</div>
-                <span
-                    class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">FACEBOOK</span>
             </a>
             <a href="#" class="group flex flex-col items-center gap-3">
                 <div
                     class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     X</div>
-                <span class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">TWITTER</span>
             </a>
             <a href="#" class="group flex flex-col items-center gap-3">
                 <div
                     class="w-12 h-12 md:w-14 md:h-14 border border-stone-800 rounded-full flex items-center justify-center group-hover:border-white group-hover:text-white transition-all text-xs">
                     IG</div>
-                <span
-                    class="text-[8px] opacity-0 group-hover:opacity-100 transition-all tracking-widest">INSTAGRAM</span>
             </a>
         </div>
         <p class="text-[10px] tracking-[0.8em] uppercase font-bold opacity-20">RoyAksorn / 2026</p>
@@ -334,9 +369,9 @@
             if (user) {
                 const displayName = user.email.split('@')[0];
                 document.getElementById('nav-auth-group').innerHTML = `
-                    <div class="flex items-center gap-4 md:gap-6">
-                        <span class="hidden sm:inline text-stone-400 italic font-light">สวัสดียามเย็น, <b class="text-stone-700 font-medium">${displayName}</b></span>
-                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-[10px] md:text-xs tracking-widest border-b border-[#A31D1D]/20 hover:text-stone-900 transition-all">Logout</button>
+                    <div class="flex items-center gap-4">
+                        <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
+                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
                     </div>`;
                 document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
             }
@@ -344,21 +379,39 @@
     </script>
 
     <script>
-        // Reveal on scroll
+        function toggleMobileMenu() {
+            const overlay = document.getElementById('mobile-overlay');
+            const panel = document.getElementById('mobile-panel');
+            const isOpen = panel.classList.contains('translate-x-0');
+
+            if (isOpen) {
+                panel.classList.remove('translate-x-0');
+                panel.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function toggleSubmenu() {
+            const submenu = document.getElementById('mobile-submenu');
+            const arrow = document.getElementById('arrow');
+            submenu.classList.toggle('active');
+            arrow.innerHTML = submenu.classList.contains('active') ? '↑' : '↓';
+        }
+
         function reveal() {
             var reveals = document.querySelectorAll(".reveal");
             for (var i = 0; i < reveals.length; i++) {
                 var windowHeight = window.innerHeight;
                 var elementTop = reveals[i].getBoundingClientRect().top;
-                var elementVisible = 150;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
-                }
+                if (elementTop < windowHeight - 150) reveals[i].classList.add("active");
             }
         }
         window.addEventListener("scroll", reveal);
 
-        // Stats counter (Original Logic Intact)
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
             let startTimestamp = null;
@@ -381,22 +434,15 @@
         }, { threshold: 0.5 });
 
         document.addEventListener("DOMContentLoaded", () => {
-            reveal(); // Initial check
+            reveal();
             const statTarget = document.getElementById("total-users");
             if (statTarget) observer.observe(statTarget);
-
             const onlineNow = document.getElementById('online-now');
             setInterval(() => {
                 let current = parseInt(onlineNow.innerText);
-                let change = Math.floor(Math.random() * 3) - 1;
-                onlineNow.innerText = Math.max(15, current + change);
+                onlineNow.innerText = Math.max(15, current + (Math.floor(Math.random() * 3) - 1));
             }, 4000);
         });
-
-        // Mobile Menu Placeholder (For further expansion)
-        function toggleMobileMenu() {
-            alert("เมนูส่วนตัวกำลังถูกจารึก... ระบบนำทางหลักยังทำงานได้ผ่านปุ่ม 'ฝากตัว' และ 'งานเขียน'");
-        }
     </script>
 </body>
 
