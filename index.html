@@ -159,6 +159,12 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Profile Image Hover */
+        .profile-trigger:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
     </style>
 </head>
 
@@ -172,9 +178,15 @@
             <span class="text-[#A31D1D] font-bold text-xl">เมนู</span>
             <button onclick="toggleMobileMenu()" class="text-stone-400">✕ ปิด</button>
         </div>
-        <div class="flex flex-col gap-6" id="mobile-nav-list">
-            <a href="#" onclick="loginWithGoogle()" class="text-2xl text-stone-800">ล็อกอิน</a>
-            <a href="#" onclick="loginWithGoogle()" class="text-2xl text-[#A31D1D] font-bold">ฝากตัว</a>
+        
+        <div id="mobile-user-info" class="mb-8">
+            <div class="flex flex-col gap-6" id="mobile-nav-list">
+                <a href="#" onclick="loginWithGoogle()" class="text-2xl text-stone-800">ล็อกอิน</a>
+                <a href="#" onclick="loginWithGoogle()" class="text-2xl text-[#A31D1D] font-bold">ฝากตัว</a>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-6">
             <hr class="border-stone-100">
             <div>
                 <button onclick="toggleSubmenu()"
@@ -191,16 +203,17 @@
             </div>
             <a href="library.html" class="text-2xl text-stone-800">งานเขียนของข้าพเจ้า</a>
             <a href="#" class="text-2xl text-stone-400">เกี่ยวกับ (เร็วๆ นี้)</a>
+            <div id="mobile-logout-area"></div>
         </div>
     </div>
 
     <nav
-        class="flex justify-between items-center px-6 md:px-10 py-6 md:py-8 border-b border-stone-100 sticky top-0 bg-white/90 backdrop-blur-md z-[999]">
+        class="flex justify-between items-center px-6 md:px-10 py-4 md:py-6 border-b border-stone-100 sticky top-0 bg-white/90 backdrop-blur-md z-[999]">
         <div class="font-header font-medium text-2xl md:text-3xl tracking-tighter text-[#A31D1D]">
             <a href="index.html">ROY AKSORN</a>
         </div>
 
-        <div class="flex items-center gap-2 md:gap-10">
+        <div class="flex items-center gap-4 md:gap-8">
             <div class="hidden lg:flex items-center gap-10">
                 <a href="library.html"
                     class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">งานเขียนของข้าพเจ้า</a>
@@ -226,11 +239,11 @@
                 </div>
             </div>
 
-            <div id="nav-auth-group" class="flex items-center gap-3 md:gap-8 font-header">
+            <div id="nav-auth-group" class="flex items-center gap-3 font-header">
                 <button onclick="loginWithGoogle()"
                     class="nav-action text-[14px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</button>
                 <button onclick="loginWithGoogle()"
-                    class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</button>
+                    class="btn-join px-4 md:px-8 py-1.5 md:py-2 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</button>
             </div>
 
             <button class="p-1 text-[#A31D1D] lg:hidden hover:scale-110 transition" onclick="toggleMobileMenu()">
@@ -239,6 +252,9 @@
                     </path>
                 </svg>
             </button>
+
+            <div id="nav-profile-image-container" class="flex items-center">
+                </div>
         </div>
     </nav>
 
@@ -396,38 +412,61 @@
 
         // Auth State Listener (UI Update)
         onAuthStateChanged(auth, async (user) => {
+            const authGroup = document.getElementById('nav-auth-group');
+            const profileContainer = document.getElementById('nav-profile-image-container');
+            const mobileUserInfo = document.getElementById('mobile-user-info');
+            const mobileLogoutArea = document.getElementById('mobile-logout-area');
+
             if (user) {
+                // ดึงข้อมูลจาก Firestore
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
                 
-                const displayName = userDoc.exists() ? (userDoc.data().username || user.displayName) : user.displayName;
-                const photoURL = user.photoURL || '';
+                let displayName = user.displayName;
+                let profileImg = user.photoURL; // ค่าเริ่มต้นจาก Google
 
-                // Update Desktop UI
-                document.getElementById('nav-auth-group').innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <img src="${photoURL}" class="w-8 h-8 rounded-full border border-[#A31D1D]/20 shadow-sm" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
-                            <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
-                        </div>
-                        <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20 hover:opacity-70 transition">Logout</button>
-                    </div>`;
-
-                // Update Mobile UI
-                const mobileNav = document.getElementById('mobile-nav-list');
-                if (mobileNav) {
-                    mobileNav.firstElementChild.outerHTML = `
-                    <div class="flex items-center gap-4 mb-4">
-                        <img src="${photoURL}" class="w-12 h-12 rounded-full border-2 border-[#A31D1D]" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
-                        <div class="flex flex-col">
-                            <span class="text-stone-400 text-xs italic">ผู้จารึกอักษร</span>
-                            <span class="text-stone-800 font-bold text-lg">${displayName}</span>
-                        </div>
-                    </div>`;
-                    mobileNav.children[1].innerHTML = "ออกจากระบบ";
-                    mobileNav.children[1].setAttribute("onclick", "logout()");
-                    mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    displayName = data.username || user.displayName;
+                    // สำคัญ: ดึง avatarUrl จาก Firestore ที่เซ็ตมาจากหน้า setup
+                    profileImg = data.avatarUrl || user.photoURL; 
                 }
+
+                // 1. ซ่อนปุ่ม Login/ฝากตัว ใน Desktop
+                authGroup.classList.add('hidden');
+
+                // 2. แสดงรูปโปรไฟล์กลมๆ ขวาสุดของ Hamburger
+                profileContainer.innerHTML = `
+                    <div class="profile-trigger cursor-pointer ml-2 md:ml-4 transition-all duration-300">
+                        <img src="${profileImg}" 
+                             alt="Profile" 
+                             class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#A31D1D] object-cover shadow-md"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${displayName}&background=A31D1D&color=fff'">
+                    </div>
+                `;
+
+                // 3. อัปเดตข้อมูลในหน้า Mobile Menu (Hamburger)
+                mobileUserInfo.innerHTML = `
+                    <div class="flex items-center gap-4 p-4 bg-stone-50 rounded-2xl mb-4">
+                        <img src="${profileImg}" class="w-16 h-16 rounded-full border-2 border-[#A31D1D] object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
+                        <div class="flex flex-col">
+                            <span class="text-[#A31D1D] text-xs font-bold tracking-widest uppercase">ผู้จารึกอักษร</span>
+                            <span class="text-stone-800 font-bold text-xl">${displayName}</span>
+                        </div>
+                    </div>
+                `;
+
+                // 4. เพิ่มปุ่ม Logout ใน Mobile Panel
+                mobileLogoutArea.innerHTML = `
+                    <button onclick="logout()" class="w-full mt-6 py-4 border-t border-stone-100 text-left text-stone-400 font-header text-xl uppercase tracking-widest hover:text-[#A31D1D] transition">
+                        ออกจากระบบ
+                    </button>
+                `;
+
+            } else {
+                // กรณีไม่ได้ Login
+                authGroup.classList.remove('hidden');
+                profileContainer.innerHTML = '';
             }
         });
     </script>
@@ -497,7 +536,7 @@
             const onlineNow = document.getElementById('online-now');
             setInterval(() => {
                 let current = parseInt(onlineNow.innerText);
-                let change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                let change = Math.floor(Math.random() * 3) - 1; 
                 onlineNow.innerText = Math.max(15, current + change);
             }, 4000);
         });
