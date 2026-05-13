@@ -353,7 +353,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
@@ -363,31 +362,15 @@
             messagingSenderId: "6587270930",
             appId: "1:6587270930:web:cef1d91e936b09478815cb"
         };
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // ฟังก์ชัน Login ที่มีการเช็คฐานข้อมูล (Logic ของ Antigravity)
+        // ฟังก์ชัน Login จริงที่ผูกกับ window เพื่อให้ HTML เรียกใช้ได้
         window.loginWithGoogle = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                
-                // ตรวจสอบว่ามีข้อมูลใน Firestore หรือยัง
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                if (userDoc.exists()) {
-                    // ถ้ามีบัญชีอยู่แล้ว (มีข้อมูลใน DB) ส่งไปหน้า Library หรือ Index ปกติ
-                    console.log("Welcome back:", userDoc.data().displayName);
-                    window.location.href = "index.html"; 
-                } else {
-                    // ถ้ายังไม่เคยสมัคร (ไม่มีข้อมูลใน DB) บังคับไปหน้าสมัครสมาชิก/ผูกบัญชี
-                    console.log("New user detected, redirecting to signup...");
-                    window.location.href = "register.html"; // เปลี่ยนเป็นชื่อไฟล์หน้าลงทะเบียน/ผูกบัญชีของคุณ
-                }
+                console.log("Logged in:", result.user);
             } catch (error) {
                 console.error("Login Failed:", error);
                 alert("การเชื่อมต่อขัดข้อง: " + error.message);
@@ -398,23 +381,12 @@
             signOut(auth).then(() => window.location.reload());
         };
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                // เช็คสถานะข้อมูลใน DB อีกรอบเพื่อความชัวร์เวลา Refresh หน้า
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                // แม้จะล็อกอิน Google ค้างไว้ แต่ถ้าไม่มีข้อมูลใน DB ให้เด้งไปหน้าผูกบัญชี
-                if (!userDoc.exists() && !window.location.href.includes('register.html')) {
-                    window.location.href = "register.html";
-                    return;
-                }
-
-                const userData = userDoc.exists() ? userDoc.data() : null;
-                const displayName = userData ? userData.username : (user.displayName || user.email.split('@')[0]);
+                const displayName = user.displayName || user.email.split('@')[0];
                 const photoURL = user.photoURL || '';
 
-                // อัปเดต UI เมนู Desktop
+                // อัปเดตเมนู Desktop
                 document.getElementById('nav-auth-group').innerHTML = `
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
@@ -424,7 +396,7 @@
                         <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
                     </div>`;
 
-                // อัปเดต UI เมนู Mobile
+                // อัปเดตเมนู Mobile
                 const mobileNav = document.getElementById('mobile-nav-list');
                 if (mobileNav) {
                     mobileNav.firstElementChild.outerHTML = `
@@ -435,6 +407,7 @@
                             <span class="text-stone-800 font-bold text-lg">${displayName}</span>
                         </div>
                     </div>`;
+                    // ลบปุ่มฝากตัวออกเมื่อล็อกอินแล้ว
                     mobileNav.children[1].innerHTML = "ออกจากระบบ";
                     mobileNav.children[1].setAttribute("onclick", "logout()");
                     mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
