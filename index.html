@@ -172,9 +172,9 @@
             <span class="text-[#A31D1D] font-bold text-xl">เมนู</span>
             <button onclick="toggleMobileMenu()" class="text-stone-400">✕ ปิด</button>
         </div>
-        <div class="flex flex-col gap-6">
-            <a href="login.html" class="text-2xl text-stone-800">ล็อกอิน</a>
-            <a href="login.html?mode=register" class="text-2xl text-[#A31D1D] font-bold">ฝากตัว</a>
+        <div class="flex flex-col gap-6" id="mobile-nav-list">
+            <a href="#" onclick="loginWithGoogle()" class="text-2xl text-stone-800">ล็อกอิน</a>
+            <a href="#" onclick="loginWithGoogle()" class="text-2xl text-[#A31D1D] font-bold">ฝากตัว</a>
             <hr class="border-stone-100">
             <div>
                 <button onclick="toggleSubmenu()"
@@ -227,10 +227,10 @@
             </div>
 
             <div id="nav-auth-group" class="flex items-center gap-3 md:gap-8 font-header">
-                <a href="login.html"
-                    class="nav-action text-[14px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</a>
-                <a href="login.html?mode=register"
-                    class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</a>
+                <button onclick="loginWithGoogle()"
+                    class="nav-action text-[14px] md:text-[18px] font-semibold text-stone-500 uppercase">ล็อกอิน</button>
+                <button onclick="loginWithGoogle()"
+                    class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</button>
             </div>
 
             <button class="p-1 text-[#A31D1D] hover:scale-110 transition" onclick="toggleMobileMenu()">
@@ -352,7 +352,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
@@ -364,16 +364,54 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // ฟังก์ชัน Login จริงที่ผูกกับ window เพื่อให้ HTML เรียกใช้ได้
+        window.loginWithGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                console.log("Logged in:", result.user);
+            } catch (error) {
+                console.error("Login Failed:", error);
+                alert("การเชื่อมต่อขัดข้อง: " + error.message);
+            }
+        };
+
+        window.logout = () => {
+            signOut(auth).then(() => window.location.reload());
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const displayName = user.email.split('@')[0];
+                const displayName = user.displayName || user.email.split('@')[0];
+                const photoURL = user.photoURL || '';
+
+                // อัปเดตเมนู Desktop
                 document.getElementById('nav-auth-group').innerHTML = `
                     <div class="flex items-center gap-4">
-                        <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
-                        <button id="logout-btn" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
+                        <div class="flex items-center gap-2">
+                            <img src="${photoURL}" class="w-8 h-8 rounded-full border border-[#A31D1D]/20" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
+                            <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
+                        </div>
+                        <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
                     </div>`;
-                document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
+
+                // อัปเดตเมนู Mobile
+                const mobileNav = document.getElementById('mobile-nav-list');
+                if (mobileNav) {
+                    mobileNav.firstElementChild.outerHTML = `
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="${photoURL}" class="w-12 h-12 rounded-full border-2 border-[#A31D1D]" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
+                        <div class="flex flex-col">
+                            <span class="text-stone-400 text-xs italic">ผู้จารึกอักษร</span>
+                            <span class="text-stone-800 font-bold text-lg">${displayName}</span>
+                        </div>
+                    </div>`;
+                    // ลบปุ่มฝากตัวออกเมื่อล็อกอินแล้ว
+                    mobileNav.children[1].innerHTML = "ออกจากระบบ";
+                    mobileNav.children[1].setAttribute("onclick", "logout()");
+                    mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
+                }
             }
         });
     </script>
@@ -414,6 +452,7 @@
 
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
+            if (!obj) return;
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
