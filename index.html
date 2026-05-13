@@ -353,6 +353,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
@@ -364,13 +365,25 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app); // เพิ่ม Firestore
         const provider = new GoogleAuthProvider();
 
-        // ฟังก์ชัน Login จริงที่ผูกกับ window เพื่อให้ HTML เรียกใช้ได้
         window.loginWithGoogle = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
-                console.log("Logged in:", result.user);
+                const user = result.user;
+
+                // เช็คว่าใน Firestore มีข้อมูล user นี้หรือยัง
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    console.log("Welcome back:", userDoc.data().username);
+                    // ถ้ามีข้อมูลแล้ว ไม่ต้องไปไหน ให้อยู่หน้า index นี้แหละ
+                } else {
+                    console.log("New user... redirecting to setup");
+                    window.location.href = "setup-profile.html"; // แก้เป็นไฟล์ที่คุณมีในรูป
+                }
             } catch (error) {
                 console.error("Login Failed:", error);
                 alert("การเชื่อมต่อขัดข้อง: " + error.message);
@@ -381,9 +394,13 @@
             signOut(auth).then(() => window.location.reload());
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const displayName = user.displayName || user.email.split('@')[0];
+                // พยายามดึงชื่อจาก Firestore มาแสดงแทนชื่อ Google
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                const displayName = userDoc.exists() ? (userDoc.data().username || user.displayName) : user.displayName;
                 const photoURL = user.photoURL || '';
 
                 // อัปเดตเมนู Desktop
@@ -407,7 +424,6 @@
                             <span class="text-stone-800 font-bold text-lg">${displayName}</span>
                         </div>
                     </div>`;
-                    // ลบปุ่มฝากตัวออกเมื่อล็อกอินแล้ว
                     mobileNav.children[1].innerHTML = "ออกจากระบบ";
                     mobileNav.children[1].setAttribute("onclick", "logout()");
                     mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
@@ -417,6 +433,7 @@
     </script>
 
     <script>
+        // โค้ดเดิมของคุณทั้งหมด (Toggle Menu, Animate Value, Reveal)
         function toggleMobileMenu() {
             const overlay = document.getElementById('mobile-overlay');
             const panel = document.getElementById('mobile-panel');
