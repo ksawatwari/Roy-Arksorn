@@ -200,7 +200,7 @@
             <a href="index.html">ROY AKSORN</a>
         </div>
 
-        <div class="flex items-center gap-2 md:gap-10">
+        <div class="flex items-center gap-2 md:gap-5">
             <div class="hidden lg:flex items-center gap-10">
                 <a href="library.html"
                     class="font-header text-[16px] font-semibold uppercase tracking-wide text-[#A31D1D] border-b-2 border-[#A31D1D] pb-1 hover:opacity-70 transition">งานเขียนของข้าพเจ้า</a>
@@ -233,12 +233,18 @@
                     class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</button>
             </div>
 
-            <button class="p-1 text-[#A31D1D] hover:scale-110 transition" onclick="toggleMobileMenu()">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
-                    </path>
-                </svg>
-            </button>
+            <div class="flex items-center gap-3">
+                <div id="nav-profile-zone" class="hidden order-first md:order-none">
+                     <img id="user-nav-avatar" src="" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#A31D1D] cursor-pointer hover:scale-110 transition shadow-sm" onclick="toggleMobileMenu()">
+                </div>
+
+                <button class="p-1 text-[#A31D1D] hover:scale-110 transition order-last" onclick="toggleMobileMenu()">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                        </path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -353,6 +359,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
@@ -364,9 +371,9 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // ฟังก์ชัน Login จริงที่ผูกกับ window เพื่อให้ HTML เรียกใช้ได้
         window.loginWithGoogle = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -381,36 +388,50 @@
             signOut(auth).then(() => window.location.reload());
         };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
+            const authGroup = document.getElementById('nav-auth-group');
+            const profileZone = document.getElementById('nav-profile-zone');
+            const navAvatarImg = document.getElementById('user-nav-avatar');
+
             if (user) {
-                const displayName = user.displayName || user.email.split('@')[0];
-                const photoURL = user.photoURL || '';
+                // เช็คข้อมูลใน Firestore
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
 
-                // อัปเดตเมนู Desktop
-                document.getElementById('nav-auth-group').innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <img src="${photoURL}" class="w-8 h-8 rounded-full border border-[#A31D1D]/20" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
-                            <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
-                        </div>
-                        <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
-                    </div>`;
+                if (!userSnap.exists()) {
+                    // ถ้ายังไม่มีโปรไฟล์ ให้เด้งไปหน้า Setup
+                    window.location.href = "setup-profile.html";
+                } else {
+                    // ถ้ามีโปรไฟล์แล้ว
+                    const userData = userSnap.data();
+                    const displayName = userData.displayName || user.displayName;
+                    const avatarURL = userData.avatarURL || user.photoURL;
 
-                // อัปเดตเมนู Mobile
-                const mobileNav = document.getElementById('mobile-nav-list');
-                if (mobileNav) {
-                    mobileNav.firstElementChild.outerHTML = `
-                    <div class="flex items-center gap-4 mb-4">
-                        <img src="${photoURL}" class="w-12 h-12 rounded-full border-2 border-[#A31D1D]" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
-                        <div class="flex flex-col">
-                            <span class="text-stone-400 text-xs italic">ผู้จารึกอักษร</span>
-                            <span class="text-stone-800 font-bold text-lg">${displayName}</span>
-                        </div>
-                    </div>`;
-                    // ลบปุ่มฝากตัวออกเมื่อล็อกอินแล้ว
-                    mobileNav.children[1].innerHTML = "ออกจากระบบ";
-                    mobileNav.children[1].setAttribute("onclick", "logout()");
-                    mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
+                    // 1. ซ่อนปุ่ม ล็อกอิน/ฝากตัว
+                    authGroup.style.display = 'none';
+
+                    // 2. โชว์รูปโปรไฟล์ขวาสุด (ก่อน Hamburger)
+                    profileZone.classList.remove('hidden');
+                    navAvatarImg.src = avatarURL;
+
+                    // 3. อัปเดตเมนู Mobile
+                    const mobileNav = document.getElementById('mobile-nav-list');
+                    if (mobileNav) {
+                        mobileNav.firstElementChild.outerHTML = `
+                        <div class="flex flex-col items-center gap-4 mb-6 p-4 bg-stone-50 rounded-xl relative">
+                            <a href="setup-profile.html" class="absolute top-2 right-2 w-8 h-8 bg-white border border-stone-200 rounded-full flex items-center justify-center text-[#A31D1D] shadow-sm hover:scale-110 transition">✎</a>
+                            <img src="${avatarURL}" class="w-20 h-20 rounded-full border-4 border-[#A31D1D] shadow-md">
+                            <div class="text-center">
+                                <span class="text-stone-400 text-xs italic block">ผู้จารึกอักษร</span>
+                                <span class="text-stone-800 font-bold text-xl">${displayName}</span>
+                            </div>
+                        </div>`;
+                        
+                        // เปลี่ยนปุ่มฝากตัวเป็นออกจากระบบ
+                        mobileNav.children[1].innerHTML = "ออกจากระบบ";
+                        mobileNav.children[1].setAttribute("onclick", "logout()");
+                        mobileNav.children[1].classList.replace("text-[#A31D1D]", "text-stone-400");
+                    }
                 }
             }
         });
