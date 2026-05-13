@@ -233,7 +233,7 @@
                     class="btn-join px-3 md:px-8 py-1.5 md:py-2.5 text-[#A31D1D] text-[14px] md:text-[18px] font-semibold rounded-full uppercase text-center">ฝากตัว</button>
             </div>
 
-            <button class="p-1 text-[#A31D1D] hover:scale-110 transition" onclick="toggleMobileMenu()">
+            <button class="p-1 text-[#A31D1D] lg:hidden hover:scale-110 transition" onclick="toggleMobileMenu()">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
                     </path>
@@ -363,26 +363,25 @@
             messagingSenderId: "6587270930",
             appId: "1:6587270930:web:cef1d91e936b09478815cb"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app); // เพิ่ม Firestore
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
+        // Login Logic
         window.loginWithGoogle = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
-
-                // เช็คว่าใน Firestore มีข้อมูล user นี้หรือยัง
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
 
                 if (userDoc.exists()) {
-                    console.log("Welcome back:", userDoc.data().username);
-                    // ถ้ามีข้อมูลแล้ว ไม่ต้องไปไหน ให้อยู่หน้า index นี้แหละ
+                    console.log("ยินดีต้อนรับกลับ:", userDoc.data().username);
                 } else {
-                    console.log("New user... redirecting to setup");
-                    window.location.href = "setup-profile.html"; // แก้เป็นไฟล์ที่คุณมีในรูป
+                    console.log("ผู้ใช้ใหม่.. กำลังไปหน้าตั้งค่าโปรไฟล์");
+                    window.location.href = "setup-profile.html";
                 }
             } catch (error) {
                 console.error("Login Failed:", error);
@@ -390,30 +389,31 @@
             }
         };
 
+        // Logout Logic
         window.logout = () => {
             signOut(auth).then(() => window.location.reload());
         };
 
+        // Auth State Listener (UI Update)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // พยายามดึงชื่อจาก Firestore มาแสดงแทนชื่อ Google
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
                 
                 const displayName = userDoc.exists() ? (userDoc.data().username || user.displayName) : user.displayName;
                 const photoURL = user.photoURL || '';
 
-                // อัปเดตเมนู Desktop
+                // Update Desktop UI
                 document.getElementById('nav-auth-group').innerHTML = `
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
-                            <img src="${photoURL}" class="w-8 h-8 rounded-full border border-[#A31D1D]/20" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
+                            <img src="${photoURL}" class="w-8 h-8 rounded-full border border-[#A31D1D]/20 shadow-sm" onerror="this.src='https://ui-avatars.com/api/?name=${displayName}'">
                             <span class="hidden sm:inline text-stone-400 italic font-light text-xs">สวัสดียามเย็น, <b class="text-stone-700">${displayName}</b></span>
                         </div>
-                        <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20">Logout</button>
+                        <button id="logout-btn" onclick="logout()" class="text-[#A31D1D] font-bold uppercase text-[10px] tracking-widest border-b border-[#A31D1D]/20 hover:opacity-70 transition">Logout</button>
                     </div>`;
 
-                // อัปเดตเมนู Mobile
+                // Update Mobile UI
                 const mobileNav = document.getElementById('mobile-nav-list');
                 if (mobileNav) {
                     mobileNav.firstElementChild.outerHTML = `
@@ -433,7 +433,6 @@
     </script>
 
     <script>
-        // โค้ดเดิมของคุณทั้งหมด (Toggle Menu, Animate Value, Reveal)
         function toggleMobileMenu() {
             const overlay = document.getElementById('mobile-overlay');
             const panel = document.getElementById('mobile-panel');
@@ -493,10 +492,13 @@
             reveal();
             const statTarget = document.getElementById("total-users");
             if (statTarget) observer.observe(statTarget);
+
+            // Simulation of Real-time online users
             const onlineNow = document.getElementById('online-now');
             setInterval(() => {
                 let current = parseInt(onlineNow.innerText);
-                onlineNow.innerText = Math.max(15, current + (Math.floor(Math.random() * 3) - 1));
+                let change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                onlineNow.innerText = Math.max(15, current + change);
             }, 4000);
         });
     </script>
