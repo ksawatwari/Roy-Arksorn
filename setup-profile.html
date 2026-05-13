@@ -447,7 +447,7 @@
 
             <div class="field-group">
                 <label class="field-label">คำแนะนำตัว (Bio)</label>
-                <input type="text" class="field-input" placeholder="บอกเล่าเรื่องราวของท่านสั้นๆ...">
+                <input type="text" id="bio-field" class="field-input" placeholder="บอกเล่าเรื่องราวของท่านสั้นๆ...">
             </div>
 
             <div class="field-group">
@@ -531,18 +531,42 @@
             }
         }
 
+        // --- ส่วนที่แก้ไข: เก็บข้อมูลลง LocalStorage และ Redirect ---
         function executeSacredAwakening() {
+            // 1. ดึงข้อมูลปัจจุบัน
+            const finalName = document.getElementById('name-field').value;
+            const finalAvatar = document.getElementById('p-avatar').src;
+            const finalAlias = document.getElementById('p-title').innerText;
+            const finalBio = document.getElementById('bio-field').value;
+
+            // 2. บันทึกข้อมูล
+            const userData = {
+                name: finalName,
+                avatar: finalAvatar,
+                alias: finalAlias,
+                bio: finalBio,
+                isSetup: true
+            };
+            localStorage.setItem('masterpiece_user', JSON.stringify(userData));
+
+            // 3. แสดง Animation
             const overlay = document.getElementById('sacred-overlay');
             const blessing = document.getElementById('blessing-text');
             const avatarTarget = document.getElementById('sacred-avatar-target');
-            avatarTarget.innerHTML = `<img src="${document.getElementById('p-avatar').src}" style="width:200px; height:200px; border-radius:50%; box-shadow:0 0 30px var(--zen-gold);">`;
+            
+            avatarTarget.innerHTML = `<img src="${finalAvatar}" style="width:200px; height:200px; border-radius:50%; box-shadow:0 0 30px var(--zen-gold); object-fit:cover;">`;
+            
             overlay.style.display = 'flex';
             setTimeout(() => overlay.style.opacity = '1', 10);
             createParticles();
             setTimeout(() => blessing.style.animation = 'fade-up 1.5s forwards', 800);
+
+            // 4. วาร์ปกลับหน้าแรกเมื่อจบพิธี
             setTimeout(() => {
                 overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.display = 'none'; alert("จารึกตัวตนสำเร็จ!"); }, 1000);
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // ส่งกลับหน้าแรก
+                }, 1000);
             }, 4000);
         }
 
