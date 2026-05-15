@@ -530,7 +530,9 @@
                 r.readAsDataURL(f);
             }
         }
-
+    </script>
+    
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -563,7 +565,7 @@
             }
         });
 
-        async function executeSacredAwakening() {
+        window.executeSacredAwakening = async function() {
             if(!currentUser) {
                 alert("กรุณาล็อกอินก่อนสร้างโปรไฟล์");
                 return;
