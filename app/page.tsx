@@ -55,9 +55,17 @@ export default function Page() {
     }
   }, [isSearchOpen]);
 
-  const handleLogin = async () => {
+ const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        const userDocRef = doc(db, "users", result.user.uid);
+        const userDoc = await getDoc(userDocRef);
+        // ถ้ายังไม่มีข้อมูลผู้ใช้นี้ในฐานข้อมูล ให้เด้งไปหน้าสร้างโปรไฟล์
+        if (!userDoc.exists()) {
+          window.location.href = "/setup-profile";
+        }
+      }
     } catch (error: any) {
       console.error("Login Failed:", error);
       alert("การเชื่อมต่อขัดข้อง: " + error.message);
