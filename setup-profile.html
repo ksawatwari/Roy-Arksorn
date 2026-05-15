@@ -447,7 +447,7 @@
 
             <div class="field-group">
                 <label class="field-label">คำแนะนำตัว (Bio)</label>
-                <input type="text" id="bio-field" class="field-input" placeholder="บอกเล่าเรื่องราวของท่านสั้นๆ...">
+                <input type="text" class="field-input" placeholder="บอกเล่าเรื่องราวของท่านสั้นๆ...">
             </div>
 
             <div class="field-group">
@@ -531,43 +531,85 @@
             }
         }
 
-        // --- ส่วนที่แก้ไข: เก็บข้อมูลลง LocalStorage และ Redirect ---
-        function executeSacredAwakening() {
-            // 1. ดึงข้อมูลปัจจุบัน
-            const finalName = document.getElementById('name-field').value;
-            const finalAvatar = document.getElementById('p-avatar').src;
-            const finalAlias = document.getElementById('p-title').innerText;
-            const finalBio = document.getElementById('bio-field').value;
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-            // 2. บันทึกข้อมูล
-            const userData = {
-                name: finalName,
-                avatar: finalAvatar,
-                alias: finalAlias,
-                bio: finalBio,
-                isSetup: true
-            };
-            localStorage.setItem('masterpiece_user', JSON.stringify(userData));
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGOEKhvyPZKID9AD0Y1npAry2QmiE4ieU",
+            authDomain: "royarksorn.firebaseapp.com",
+            projectId: "royarksorn",
+            storageBucket: "royarksorn.firebasestorage.app",
+            messagingSenderId: "6587270930",
+            appId: "1:6587270930:web:cef1d91e936b09478815cb"
+        };
 
-            // 3. แสดง Animation
-            const overlay = document.getElementById('sacred-overlay');
-            const blessing = document.getElementById('blessing-text');
-            const avatarTarget = document.getElementById('sacred-avatar-target');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // Auto-fill name if available
+                if(!document.getElementById('name-field').value && user.displayName) {
+                    document.getElementById('name-field').value = user.displayName;
+                    masterSync(user.displayName);
+                }
+            } else {
+                // If not logged in, shouldn't be on this page
+                window.location.href = "index.html";
+            }
+        });
+
+        async function executeSacredAwakening() {
+            if(!currentUser) {
+                alert("กรุณาล็อกอินก่อนสร้างโปรไฟล์");
+                return;
+            }
+
+            const name = document.getElementById('name-field').value || currentUser.displayName;
+            const bio = document.querySelector('.field-group:nth-child(4) .field-input').value || ""; // The Bio input
+            const alias = document.getElementById('p-title').innerText;
+            let avatarUrl = document.getElementById('p-avatar').src;
+
+            // If it's a base64 string from file upload, we should ideally upload it to Storage, 
+            // but for now, if it's small, saving it as string is okay. Otherwise, it will save the dicebear url.
             
-            avatarTarget.innerHTML = `<img src="${finalAvatar}" style="width:200px; height:200px; border-radius:50%; box-shadow:0 0 30px var(--zen-gold); object-fit:cover;">`;
-            
-            overlay.style.display = 'flex';
-            setTimeout(() => overlay.style.opacity = '1', 10);
-            createParticles();
-            setTimeout(() => blessing.style.animation = 'fade-up 1.5s forwards', 800);
+            try {
+                // Save to Firestore
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    username: name,
+                    avatarUrl: avatarUrl,
+                    bio: bio,
+                    alias: alias,
+                    createdAt: new Date()
+                });
 
-            // 4. วาร์ปกลับหน้าแรกเมื่อจบพิธี
-            setTimeout(() => {
-                overlay.style.opacity = '0';
+                // Show animation
+                const overlay = document.getElementById('sacred-overlay');
+                const blessing = document.getElementById('blessing-text');
+                const avatarTarget = document.getElementById('sacred-avatar-target');
+                avatarTarget.innerHTML = `<img src="${avatarUrl}" style="width:200px; height:200px; border-radius:50%; box-shadow:0 0 30px var(--zen-gold); object-fit: cover;">`;
+                
+                overlay.style.display = 'flex';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                createParticles();
+                setTimeout(() => blessing.style.animation = 'fade-up 1.5s forwards', 800);
+                
                 setTimeout(() => {
-                    window.location.href = 'index.html'; // ส่งกลับหน้าแรก
-                }, 1000);
-            }, 4000);
+                    overlay.style.opacity = '0';
+                    setTimeout(() => { 
+                        overlay.style.display = 'none'; 
+                        window.location.href = "index.html"; 
+                    }, 1000);
+                }, 3000);
+
+            } catch (error) {
+                console.error("Error saving profile: ", error);
+                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+            }
         }
 
         function createParticles() {
