@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import Link from "next/link";
 import { Pencil, X } from "lucide-react";
 
 const badWords = ['ควย', 'เหี้ย', 'เย็ด', 'มึง', 'กู', 'สัด', 'ระยำ', 'fuck', 'shit'];
@@ -29,6 +27,7 @@ export default function SetupProfilePage() {
   const [particles, setParticles] = useState<{id: number; x: number; y: number; size: number; duration: number}[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasInitializedRef = useRef(false);
 
   const handleNameChange = React.useCallback((val: string) => {
     setName(val);
@@ -40,15 +39,16 @@ export default function SetupProfilePage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
-        if (user.displayName && !name) {
+        if (user.displayName && !hasInitializedRef.current) {
           handleNameChange(user.displayName);
+          hasInitializedRef.current = true;
         }
       } else {
         router.push("/");
       }
     });
     return () => unsubscribe();
-  }, [name, router, handleNameChange]);
+  }, [router, handleNameChange]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,9 +64,9 @@ export default function SetupProfilePage() {
   };
 
   const getFontSize = () => {
-    if (name.length > 15) return "text-2xl";
-    if (name.length > 10) return "text-3xl";
-    return "text-4xl";
+    if (name.length > 15) return "text-xl md:text-2xl";
+    if (name.length > 10) return "text-2xl md:text-3xl";
+    return "text-3xl md:text-4xl";
   };
 
   const handleAvatarSelect = (url: string) => {
@@ -160,18 +160,18 @@ export default function SetupProfilePage() {
         
         {/* Sidebar Preview */}
         <div 
-          className="w-full md:w-[420px] bg-stone-900 text-white flex flex-col items-center justify-center p-12 text-center md:h-[700px] md:sticky md:top-10 shrink-0"
+          className="w-full md:w-[420px] bg-stone-900 text-white flex flex-col items-center justify-center px-6 py-10 md:p-12 text-center md:h-[700px] md:sticky md:top-10 shrink-0"
           style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/p6.png')" }}
         >
-          <div className="relative mb-8">
+          <div className="relative mb-6 md:mb-8">
             <img 
               src={avatarUrl} 
-              className="w-[230px] h-[230px] rounded-full bg-white border-4 border-white/10 object-cover shadow-[0_30px_60px_rgba(0,0,0,0.5)] grayscale" 
+              className="w-[160px] h-[160px] md:w-[230px] md:h-[230px] rounded-full bg-white border-4 border-white/10 object-cover shadow-[0_30px_60px_rgba(0,0,0,0.5)] grayscale" 
               alt="Profile" 
               referrerPolicy="no-referrer"
             />
             <button 
-              className="absolute bottom-2 right-2 bg-zen-red text-white w-11 h-11 rounded-full flex items-center justify-center border-[3px] border-stone-900 shadow-lg hover:scale-110 hover:rotate-12 hover:bg-[#cc2626] transition-all"
+              className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-zen-red text-white w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center border-[3px] border-stone-900 shadow-lg hover:scale-110 hover:rotate-12 hover:bg-[#cc2626] transition-all"
               onClick={() => fileInputRef.current?.click()}
             >
               <Pencil className="w-5 h-5" />
@@ -190,7 +190,7 @@ export default function SetupProfilePage() {
             <h2 className={`${getFontSize()} font-semibold mb-1 text-white leading-tight ${isBadWord ? 'text-transparent' : ''}`}>
               {isBadWord ? '---' : (name || '---')}
             </h2>
-            <p className="font-charm text-2xl text-zen-red opacity-85 mb-8">
+            <p className="font-charm text-xl md:text-2xl text-zen-red opacity-85 mb-6 md:mb-8">
                {isBadWord ? 'Signature' : (name || 'Signature')}
             </p>
             
@@ -202,12 +202,12 @@ export default function SetupProfilePage() {
         </div>
 
         {/* Form Area */}
-        <div className="flex-1 bg-stone-50 p-8 md:p-16 flex flex-col justify-center">
+        <div className="flex-1 bg-stone-50 p-6 md:p-16 flex flex-col justify-center">
           
-          <h1 className="text-4xl md:text-[42px] font-bold text-stone-900 mb-1 tracking-tight">จารึกรายละเอียดตัวตน</h1>
-          <div className="w-[55px] h-1.5 bg-zen-red mb-10"></div>
+          <h1 className="text-3xl md:text-[42px] font-bold text-stone-900 mb-1 tracking-tight">จารึกรายละเอียดตัวตน</h1>
+          <div className="w-[45px] md:w-[55px] h-1.5 bg-zen-red mb-8 md:mb-10"></div>
 
-          <div className="mb-8 relative">
+          <div className="mb-6 md:mb-8 relative">
             <label className="text-[11px] text-stone-400 font-bold uppercase tracking-[2px] mb-2 block">นามจารึกสำหรับแสดงผล</label>
             <span className="absolute right-0 top-0 text-[10px] text-stone-500 font-bold">{name.length}/20</span>
             <input 
@@ -216,28 +216,28 @@ export default function SetupProfilePage() {
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="ระบุชื่อ..." 
               maxLength={20}
-              className={`w-full bg-transparent border-b-2 py-2.5 text-xl outline-none text-stone-900 transition-colors focus:border-zen-red ${isBadWord ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-stone-200'}`}
+              className={`w-full bg-transparent border-b-2 py-2 md:py-2.5 text-lg md:text-xl outline-none text-stone-900 transition-colors focus:border-zen-red ${isBadWord ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-stone-200'}`}
             />
             {isBadWord && (
               <p className="text-[11px] text-red-600 mt-1 font-semibold">ขออภัย นามจารึกนี้มีคำไม่เหมาะสม</p>
             )}
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <label className="text-[11px] text-stone-400 font-bold uppercase tracking-[2px] mb-2 block">คำแนะนำตัว (Bio)</label>
             <input 
               type="text" 
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="บอกเล่าเรื่องราวของท่านสั้นๆ..." 
-              className="w-full bg-transparent border-b-2 border-stone-200 py-2.5 text-xl outline-none text-stone-900 transition-colors focus:border-zen-red"
+              className="w-full bg-transparent border-b-2 border-stone-200 py-2 md:py-2.5 text-lg md:text-xl outline-none text-stone-900 transition-colors focus:border-zen-red"
             />
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <label className="text-[11px] text-stone-400 font-bold uppercase tracking-[2px] mb-2 block">ตัวเลือกอวาตาร์</label>
             <button 
-              onClick={() => setIsModalOpen(true)}
+               onClick={() => setIsModalOpen(true)}
               className="bg-white border border-stone-300 px-6 py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:border-zen-red hover:text-zen-red flex items-center gap-2 transition-all w-fit"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -278,10 +278,10 @@ export default function SetupProfilePage() {
           <button 
             disabled={isBadWord || !name || isSaving}
             onClick={executeSacredAwakening}
-            className={`mt-4 py-5 text-[22px] font-bold uppercase tracking-[3px] text-white rounded-sm transition-all ${
+            className={`mt-4 py-4 md:py-5 text-xl md:text-[22px] font-bold uppercase tracking-[3px] text-white rounded-sm transition-all ${
               isBadWord || !name || isSaving 
                 ? 'bg-stone-300 cursor-not-allowed' 
-                : 'bg-zen-red hover:bg-stone-900 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)]'
+                : 'bg-zen-red hover:bg-stone-900 md:hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)]'
             }`}
           >
             {isSaving ? 'กำลังจารึก...' : 'สร้าง'}
