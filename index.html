@@ -385,10 +385,10 @@
     </div>
 
     <header class="relative text-white pt-32 pb-52 md:pt-48 md:pb-72 px-6 text-center overflow-hidden hero-fade" style="background:
-            radial-gradient(ellipse at 30% 20%, rgba(160,80,70,0.25) 0%, transparent 50%),
-            radial-gradient(ellipse at 70% 70%, rgba(140,65,55,0.2) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 10%, rgba(180,100,80,0.1) 0%, transparent 35%),
-            linear-gradient(170deg, #5C2626 0%, #7A3535 22%, #8B4040 45%, #7A3535 68%, #6B2D2D 88%, #5C2626 100%);">
+            radial-gradient(ellipse at 30% 20%, rgba(180,50,50,0.3) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 80%, rgba(140,20,20,0.4) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 0%, rgba(200,60,60,0.25) 0%, transparent 40%),
+            linear-gradient(160deg, #4A1515 0%, #6B1D1D 30%, #8B2525 50%, #6B1D1D 70%, #3D0C0C 100%);">
         <h2 class="relative z-10 font-pattaya hero-title text-[5rem] md:text-[10rem] mb-2 leading-none tracking-tighter"
             style="color: #F5EDE0;">
             <span style="opacity: 0.35;">รอย</span>อักษร
@@ -596,23 +596,23 @@
                 // 1. ซ่อนปุ่ม Login/ฝากตัว ใน Desktop
                 authGroup.classList.add('hidden');
 
-                // 2. แสดงรูปโปรไฟล์ พร้อม Dropdown Menu สำหรับออกจากระบบ
+                // 2. แสดงรูปโปรไฟล์ พร้อม Dropdown Menu สำหรับออกจากระบบ (โชว์เมื่อคลิก)
                 profileContainer.innerHTML = `
-                    <div class="relative group ml-2 md:ml-4">
-                        <div class="cursor-pointer transition-transform hover:scale-105 active:scale-95" onclick="if(window.innerWidth < 1024) toggleMobileMenu()">
+                    <div class="relative ml-2 md:ml-4" id="desktop-profile-wrapper">
+                        <div class="cursor-pointer transition-transform hover:scale-105 active:scale-95" onclick="if(window.innerWidth < 1024) { toggleMobileMenu(); } else { document.getElementById('desktop-profile-dropdown').classList.toggle('hidden'); }">
                             <img src="${profileImg}" 
                                  class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-[#A31D1D] object-cover shadow-lg"
                                  onerror="this.src='https://ui-avatars.com/api/?name=${displayName}&background=A31D1D&color=fff'">
                         </div>
                         
                         <!-- Dropdown สำหรับจอคอม (Desktop) -->
-                        <div class="nav-dropdown-content hidden lg:block" style="min-width: 200px; top: 120%;">
-                            <div class="dropdown-box text-center">
-                                <div class="py-4 border-b border-[var(--parchment-dark)] bg-stone-50/50">
+                        <div id="desktop-profile-dropdown" class="absolute hidden right-0 mt-4" style="min-width: 210px; z-index: 1000;">
+                            <div class="dropdown-box text-center bg-[#F5F0E8] border border-[#E8E0D0] rounded-lg shadow-2xl overflow-hidden">
+                                <div class="py-4 border-b border-[#E8E0D0] bg-stone-50/80">
                                     <p class="font-header text-[#A31D1D] text-[10px] tracking-widest uppercase mb-1">ผู้จารึกอักษร</p>
                                     <p class="font-bold text-stone-800 truncate px-4">${displayName}</p>
                                 </div>
-                                <button onclick="logout()" class="dropdown-link w-full text-center text-[#A31D1D] font-bold hover:bg-red-50">
+                                <button onclick="logout()" class="w-full py-3 text-center text-[#A31D1D] font-bold hover:bg-red-50 transition-colors">
                                     ออกจากระบบ
                                 </button>
                             </div>
@@ -714,6 +714,16 @@
                 let change = Math.floor(Math.random() * 3) - 1;
                 onlineNow.innerText = Math.max(15, current + change);
             }, 4000);
+
+            // Close profile dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('desktop-profile-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    if (!e.target.closest('#desktop-profile-wrapper')) {
+                        dropdown.classList.add('hidden');
+                    }
+                }
+            });
         });
     </script>
 </body>
