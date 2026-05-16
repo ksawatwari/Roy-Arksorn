@@ -6,9 +6,23 @@ import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore";
-import { Camera, Edit2, Plus, Image as ImageIcon, X, Trash2, ArrowLeft, Crop as CropIcon, Check, ChevronRight, UserCircle, Settings } from "lucide-react";
+import { Camera, Edit2, Plus, Image as ImageIcon, X, Trash2, ArrowLeft, Crop as CropIcon, Check, ChevronRight, UserCircle, Settings, MoreHorizontal } from "lucide-react";
 import Cropper from 'react-easy-crop';
 import { Area } from 'react-easy-crop';
+
+const POST_CHARS_MAX = 500;
+const BASIC_COVERS = [
+  "https://images.unsplash.com/photo-1455390582262-044cdead27d8?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1524578949392-411a0abace66?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=1200&q=80"
+];
 
 interface Post {
   id: string;
@@ -113,12 +127,25 @@ export default function ProfilePage() {
   const [postImage, setPostImage] = useState<string>("");
   const [isPosting, setIsPosting] = useState(false);
 
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editPostContent, setEditPostContent] = useState("");
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  
+  const [isBasicCoverModalOpen, setIsBasicCoverModalOpen] = useState(false);
+  const [selectedBasicCover, setSelectedBasicCover] = useState("");
+  const [localDocs, setLocalDocs] = useState<any[]>([]);
+
   // Refs for file uploads
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const postImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+      setLocalDocs(savedDocs);
+    }
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -301,11 +328,24 @@ export default function ProfilePage() {
     setIsPosting(false);
   };
 
+  const handleSaveEditPost = async (postId: string) => {
+    if (!user) return;
+    try {
+      const postRef = doc(db, "posts", postId);
+      await updateDoc(postRef, { text: editPostContent.trim() });
+      setPosts(posts.map(p => p.id === postId ? { ...p, text: editPostContent.trim() } : p));
+      setEditingPostId(null);
+    } catch(error) {
+      console.error("Error updating post", error);
+      alert("ไม่สามารถบันทึกได้");
+    }
+  };
+
   const handleDeletePost = async (postId: string) => {
-    if (!confirm("ลบโพสต์นี้หรือไม่?")) return;
     try {
       await deleteDoc(doc(db, "posts", postId));
       setPosts(posts.filter((p) => p.id !== postId));
+      setPostToDelete(null);
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -331,14 +371,23 @@ export default function ProfilePage() {
         {/* Cover Photo */}
         <div className="relative h-64 md:h-80 w-full group overflow-hidden bg-stone-200">
           <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col md:flex-row items-center justify-center gap-4">
             <button 
               onClick={() => coverInputRef.current?.click()}
-              className="bg-white/90 text-stone-900 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold hover:bg-white transition-all transform hover:scale-105"
+              className="bg-white/95 text-stone-900 px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-white transition-all transform hover:scale-105 shadow-lg"
             >
-              <CropIcon className="w-4 h-4"/> เลือกรูปและครอป
+              <CropIcon className="w-4 h-4 text-zen-red"/> เลือกรูปและครอป
             </button>
             <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChangeForCrop(e, 'cover', 3)} />
+            
+            <span className="text-white/60 font-medium text-lg hidden md:block">หรือ</span>
+            
+            <button 
+              onClick={() => setIsBasicCoverModalOpen(true)}
+              className="bg-zen-red text-white px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-[#8f1717] transition-all transform hover:scale-105 shadow-lg"
+            >
+              <ImageIcon className="w-4 h-4"/> ภาพปกพื้นฐานที่เตรียมไว้
+            </button>
           </div>
         </div>
 
@@ -581,29 +630,79 @@ export default function ProfilePage() {
 
             {/* Posts List */}
             <div className="flex flex-col gap-6">
-              {posts.map(post => (
+              {posts.map(post => {
+                const linkedWork = post.workId ? localDocs.find(d => d.id.toString() === post.workId) : null;
+                const currentWorkTitle = linkedWork?.title || post.workTitle || "Untitled";
+                const currentWorkExcerpt = linkedWork?.excerpt || post.workExcerpt || "ไม่มีคำโปรย...";
+                const currentWorkCategory = linkedWork?.category || post.workCategory;
+                const currentWorkCover = linkedWork?.cover || post.workCover;
+
+                return (
                 <div key={post.id} className="bg-white border border-stone-200 rounded-xl p-4 shadow-sm">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex gap-3">
-                      <img src={avatarUrl || `https://ui-avatars.com/api/?name=${displayName}&background=A31D1D&color=fff`} className="w-10 h-10 rounded-full object-cover" alt="Author"/>
+                      <img src={avatarUrl || `https://ui-avatars.com/api/?name=${displayName}&background=A31D1D&color=fff`} className="w-10 h-10 rounded-full object-cover border border-stone-100" alt="Author"/>
                       <div>
                         <h4 className="font-bold text-stone-800 text-md leading-none mb-1">{displayName}</h4>
                         <span className="text-xs text-stone-500 font-light">{new Date(post.createdAt).toLocaleString('th-TH')}</span>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => handleDeletePost(post.id)}
-                      className="text-stone-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4"/>
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setActiveMenuId(activeMenuId === post.id ? null : post.id)} 
+                        className="p-1.5 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-100 transition-colors"
+                      >
+                        <MoreHorizontal className="w-5 h-5"/>
+                      </button>
+                      {activeMenuId === post.id && (
+                        <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-stone-100 shadow-[0_5px_15px_rgba(0,0,0,0.08)] rounded-xl overflow-hidden z-20">
+                          <button 
+                            onClick={() => { setEditingPostId(post.id); setEditPostContent(post.text); setActiveMenuId(null); }}
+                            className="w-full text-left px-4 py-2.5 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm transition-colors"
+                          >
+                            แก้ไขข้อความ
+                          </button>
+                          <button 
+                            onClick={() => { setPostToDelete(post.id); setActiveMenuId(null); }}
+                            className="w-full text-left px-4 py-2.5 bg-white hover:bg-red-50 text-zen-red font-semibold text-sm transition-colors border-t border-stone-50"
+                          >
+                            ลบโพสต์
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
-                  {post.text && (
-                    <p className="text-stone-800 text-md whitespace-pre-wrap mb-4 font-light leading-relaxed">
+                  {editingPostId === post.id ? (
+                    <div className="mb-4 bg-stone-50 rounded-xl p-3 border border-stone-200 focus-within:ring-1 focus-within:ring-zen-red/50 transition-shadow">
+                      <textarea 
+                        value={editPostContent}
+                        onChange={(e) => setEditPostContent(e.target.value.substring(0, POST_CHARS_MAX))}
+                        className="w-full bg-transparent resize-none outline-none text-stone-800 text-md leading-relaxed font-light"
+                        rows={4}
+                        placeholder="พิมพ์เพื่อแก้ไข..."
+                      />
+                      <div className="flex justify-between items-center mt-2 border-t border-stone-200 pt-3">
+                        <span className="text-xs font-bold text-stone-400">{editPostContent.length} / {POST_CHARS_MAX}</span>
+                        <div className="flex gap-2">
+                          <button onClick={() => setEditingPostId(null)} className="px-4 py-1.5 text-stone-500 font-semibold text-sm rounded-lg hover:bg-stone-200 transition-colors">ยกเลิก</button>
+                          <button onClick={() => handleSaveEditPost(post.id)} className="px-4 py-1.5 text-white font-semibold text-sm rounded-lg bg-zen-red hover:bg-[#8f1717] transition-colors shadow-sm">บันทึก</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : post.text ? (
+                    <div 
+                      className="text-stone-800 text-md whitespace-pre-wrap mb-4 font-light leading-relaxed cursor-text hover:bg-stone-50 p-2 -m-2 rounded-lg transition-colors"
+                      onClick={() => {
+                        setEditingPostId(post.id);
+                        setEditPostContent(post.text);
+                        setActiveMenuId(null);
+                      }}
+                      title="คลิกเพื่อแก้ไข"
+                    >
                       {post.text}
-                    </p>
-                  )}
+                    </div>
+                  ) : null}
                   
                   {post.imageUrl && (
                     <div className="rounded-xl overflow-hidden border border-stone-200 mt-2 bg-stone-50">
@@ -612,11 +711,11 @@ export default function ProfilePage() {
                   )}
 
                   {post.workId && (
-                    <div className="mt-4 border border-stone-100 rounded-2xl overflow-hidden bg-stone-50 hover:border-zen-red transition-colors group">
+                    <Link href={`/read?id=${post.workId}`} className="block mt-4 border border-stone-100 rounded-2xl overflow-hidden bg-stone-50 hover:border-zen-red transition-colors group">
                        <div className="flex flex-col md:flex-row shadow-sm">
                            <div className="w-full md:w-32 h-40 bg-stone-200 shrink-0 relative overflow-hidden flex items-center justify-center">
-                              {post.workCover ? (
-                                <img src={post.workCover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Work cover" />
+                              {currentWorkCover ? (
+                                <img src={currentWorkCover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Work cover" />
                               ) : (
                                 <div className="text-center text-stone-400">
                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-1"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -624,23 +723,23 @@ export default function ProfilePage() {
                               )}
                            </div>
                            <div className="p-4 md:p-5 flex-1 flex flex-col justify-center">
-                               {post.workCategory && (
+                               {currentWorkCategory && (
                                  <span className="text-[10px] font-bold text-zen-red tracking-wider uppercase mb-1 block">
-                                   {post.workCategory}
+                                   {currentWorkCategory}
                                  </span>
                                )}
                                <h4 className="text-lg font-bold text-stone-800 mb-2 leading-tight">
-                                  {post.workTitle || "Untitled"}
+                                  {currentWorkTitle}
                                </h4>
                                <p className="text-sm text-stone-500 line-clamp-2 leading-relaxed max-w-lg font-light">
-                                  {post.workExcerpt || "ไม่มีคำโปรย..."}
+                                  {currentWorkExcerpt}
                                </p>
                            </div>
                        </div>
-                    </div>
+                    </Link>
                   )}
                 </div>
-              ))}
+              )})}
               
               {posts.length === 0 && (
                 <div className="text-center py-20 bg-stone-50 rounded-xl border border-dashed border-stone-300">
@@ -652,6 +751,81 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Post Confirm Modal */}
+      {postToDelete && (
+        <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[7000] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] p-8 md:p-10 max-w-sm w-full text-center shadow-2xl relative">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-8 h-8 text-zen-red" />
+            </div>
+            <h3 className="text-2xl font-bold text-stone-900 mb-2">ลบล้างจากกาลเวลา?</h3>
+            <p className="text-stone-500 mb-8 font-light leading-relaxed">
+              ร่องรอยแห่งความคิดนี้จะเลือนหายไปจากหน้าประวัติศาสตร์อย่างสิ้นเชิง คุณแน่ใจที่จะลบล้างมันใช่หรือไม่?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => handleDeletePost(postToDelete)} 
+                className="w-full py-3.5 bg-white text-zen-red border border-zen-red/20 font-bold rounded-xl hover:bg-zen-red hover:text-white shadow-sm transition-all"
+              >
+                ลบล้างรอยจารึก
+              </button>
+              <button 
+                onClick={() => setPostToDelete(null)} 
+                className="w-full py-3.5 bg-stone-100 text-stone-600 font-bold rounded-xl hover:bg-stone-200 transition-colors"
+              >
+                เก็บไว้ก่อน
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Basic Covers Modal */}
+      {isBasicCoverModalOpen && (
+        <div className="fixed inset-0 bg-stone-900/80 backdrop-blur-sm z-[7000] p-4 flex items-center justify-center">
+          <div className="bg-white w-full max-w-2xl h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
+              <h3 className="text-xl font-bold text-stone-900">คอลเลกชันปกพื้นฐาน</h3>
+              <button onClick={() => setIsBasicCoverModalOpen(false)} className="text-stone-400 hover:text-zen-red p-2 bg-white rounded-full"><X className="w-5 h-5"/></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-5 bg-white">
+              {BASIC_COVERS.map(cover => (
+                <div 
+                  key={cover} 
+                  onClick={() => setSelectedBasicCover(cover)}
+                  className={`cursor-pointer rounded-2xl overflow-hidden border-4 transition-all relative group ${selectedBasicCover === cover ? 'border-zen-red shadow-lg' : 'border-transparent hover:border-stone-200 bg-stone-50'}`}
+                >
+                  <img src={cover} alt="Cover option" className="w-full h-40 md:h-48 object-cover group-hover:scale-105 transition-transform duration-700" />
+                  {selectedBasicCover === cover && (
+                    <div className="absolute top-3 right-3 bg-zen-red text-white p-1.5 rounded-full shadow-md z-10">
+                      <Check className="w-5 h-5"/>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="p-6 border-t border-stone-100 bg-stone-50 shrink-0 flex justify-end gap-3 rounded-b-3xl">
+              <button onClick={() => setIsBasicCoverModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-stone-600 bg-stone-200/50 hover:bg-stone-200 transition-colors">ยกเลิก</button>
+              <button 
+                disabled={!selectedBasicCover}
+                onClick={async () => {
+                  if (user && selectedBasicCover) {
+                    setCoverUrl(selectedBasicCover);
+                    try {
+                      await updateDoc(doc(db, "users", user.uid), { coverUrl: selectedBasicCover });
+                    } catch(e) {}
+                    setIsBasicCoverModalOpen(false);
+                  }
+                }} 
+                className="px-8 py-3 rounded-xl font-bold text-white bg-zen-red hover:bg-[#8f1717] disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
+              >
+                นำไปใช้
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Crop Modal */}
       {isCropModalOpen && cropImageSrc && (
