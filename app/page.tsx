@@ -154,8 +154,8 @@ export default function Page() {
               <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Books Review / แว่วอักษร</Link>
             </div>
           </div>
-          <Link href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
-          <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
+          <a href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors block cursor-pointer">งานเขียนของข้าพเจ้า</a>
+          <a href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors block cursor-pointer">เกี่ยวกับ</a>
           
           {user && (
             <div className="mt-6 pt-4 border-t border-stone-200 flex flex-col gap-4">
@@ -191,8 +191,8 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <Link href="/library" className="relative z-50 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto">งานเขียนของข้าพเจ้า</Link>
-          <Link href="#" className="relative z-50 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto">เกี่ยวกับ</Link>
+          <a href="/library" className="relative z-[1050] text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto cursor-pointer block">งานเขียนของข้าพเจ้า</a>
+          <a href="#" className="relative z-[1050] text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto cursor-pointer block">เกี่ยวกับ</a>
         </div>
 
         {/* Center Logo */}
