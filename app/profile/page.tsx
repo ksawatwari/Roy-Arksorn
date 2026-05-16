@@ -16,6 +16,11 @@ interface Post {
   text: string;
   imageUrl?: string;
   createdAt: number;
+  workId?: string;
+  workTitle?: string;
+  workExcerpt?: string;
+  workCategory?: string;
+  workCover?: string;
 }
 
 const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
@@ -603,6 +608,35 @@ export default function ProfilePage() {
                   {post.imageUrl && (
                     <div className="rounded-xl overflow-hidden border border-stone-200 mt-2 bg-stone-50">
                        <img src={post.imageUrl} alt="Post image" className="w-full max-h-[500px] object-contain" />
+                    </div>
+                  )}
+
+                  {post.workId && (
+                    <div className="mt-4 border border-stone-100 rounded-2xl overflow-hidden bg-stone-50 hover:border-zen-red transition-colors group">
+                       <div className="flex flex-col md:flex-row shadow-sm">
+                           <div className="w-full md:w-32 h-40 bg-stone-200 shrink-0 relative overflow-hidden flex items-center justify-center">
+                              {post.workCover ? (
+                                <img src={post.workCover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Work cover" />
+                              ) : (
+                                <div className="text-center text-stone-400">
+                                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-1"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </div>
+                              )}
+                           </div>
+                           <div className="p-4 md:p-5 flex-1 flex flex-col justify-center">
+                               {post.workCategory && (
+                                 <span className="text-[10px] font-bold text-zen-red tracking-wider uppercase mb-1 block">
+                                   {post.workCategory}
+                                 </span>
+                               )}
+                               <h4 className="text-lg font-bold text-stone-800 mb-2 leading-tight">
+                                  {post.workTitle || "Untitled"}
+                               </h4>
+                               <p className="text-sm text-stone-500 line-clamp-2 leading-relaxed max-w-lg font-light">
+                                  {post.workExcerpt || "ไม่มีคำโปรย..."}
+                               </p>
+                           </div>
+                       </div>
                     </div>
                   )}
                 </div>
