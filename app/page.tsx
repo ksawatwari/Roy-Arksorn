@@ -55,13 +55,12 @@ export default function Page() {
     }
   }, [isSearchOpen]);
 
- const handleLogin = async () => {
+  const handleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         const userDocRef = doc(db, "users", result.user.uid);
         const userDoc = await getDoc(userDocRef);
-        // ถ้ายังไม่มีข้อมูลผู้ใช้นี้ในฐานข้อมูล ให้เด้งไปหน้าสร้างโปรไฟล์
         if (!userDoc.exists()) {
           window.location.href = "/setup-profile";
         }
@@ -129,15 +128,15 @@ export default function Page() {
               หมวดหมู่ <ChevronDown className={`w-6 h-6 transition-transform ${isSubmenuOpen ? "rotate-180" : ""}`} />
             </button>
             <div className={`flex flex-col pl-4 mt-4 gap-4 border-l-2 border-stone-200 overflow-hidden transition-all duration-300 ${isSubmenuOpen ? "max-h-[500px]" : "max-h-0"}`}>
-              <Link href="#" className="text-stone-500">Originals / ออริจินัล</Link>
-              <Link href="#" className="text-stone-500">Essays / บทพิจารณ์</Link>
-              <Link href="#" className="text-stone-500">Journal / วิถีอักษร</Link>
-              <Link href="#" className="text-stone-500">Insights / พินิจภาพ</Link>
-              <Link href="#" className="text-stone-500">Books Review / แว่วอักษร</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Originals / ออริจินัล</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Essays / บทพิจารณ์</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Journal / วิถีอักษร</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Insights / พินิจภาพ</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Books Review / แว่วอักษร</Link>
             </div>
           </div>
-          <Link href="#" className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
-          <Link href="#" className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
+          <Link href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
+          <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
           
           {user && (
             <button onClick={handleLogout} className="w-full mt-6 py-4 border-t border-stone-200 text-left text-stone-400 text-xl uppercase tracking-widest hover:text-zen-red transition">
@@ -165,8 +164,8 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <Link href="#" className="text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">งานเขียนของข้าพเจ้า</Link>
-          <Link href="#" className="text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">เกี่ยวกับ</Link>
+          <Link href="/library" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">งานเขียนของข้าพเจ้า</Link>
+          <Link href="#" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">เกี่ยวกับ</Link>
         </div>
 
         {/* Center Logo */}
