@@ -67,7 +67,11 @@ export default function Page() {
       }
     } catch (error: any) {
       console.error("Login Failed:", error);
-      alert("การเชื่อมต่อขัดข้อง: " + error.message);
+      if (error.code === 'auth/unauthorized-domain') {
+        alert(`ไม่สามารถล็อกอินได้ (Unauthorized Domain)\n\nโปรดไปที่ Firebase Console > Authentication > Settings > Authorized domains และเพิ่มโดเมนนี้เข้าไป:\n${window.location.hostname}`);
+      } else {
+        alert("การเชื่อมต่อขัดข้อง: " + error.message);
+      }
     }
   };
 
@@ -181,6 +185,7 @@ export default function Page() {
           {/* Search */}
           <div className="flex items-center relative">
             <input 
+              suppressHydrationWarning
               ref={searchInputRef}
               type="text" 
               value={searchQuery}
@@ -190,6 +195,7 @@ export default function Page() {
                 ${isSearchOpen ? 'w-48 md:w-64 opacity-100 border-stone-400 pointer-events-auto' : 'w-0 opacity-0 border-transparent pointer-events-none'}`}
             />
             <button 
+              suppressHydrationWarning
               onClick={() => setIsSearchOpen(!isSearchOpen)} 
               className="p-2 text-stone-600 hover:text-zen-red transition-colors flex-shrink-0 z-10 bg-transparent hover:scale-110 duration-300"
             >
@@ -200,8 +206,8 @@ export default function Page() {
           <div className="hidden md:flex items-center gap-3 lg:gap-4 font-header">
             {!user ? (
               <>
-                <button onClick={handleLogin} className="text-[16px] font-semibold text-stone-500 uppercase hover:text-zen-red transition-colors hover:scale-110 duration-300 whitespace-nowrap">ล็อกอิน</button>
-                <button onClick={handleLogin} className="px-5 lg:px-6 py-1.5 lg:py-2 border-2 border-zen-red text-zen-red text-[16px] font-semibold rounded-full uppercase hover:bg-zen-red hover:text-white transition-all hover:scale-105 duration-300 whitespace-nowrap">ฝากตัว</button>
+                <button suppressHydrationWarning onClick={handleLogin} className="text-[16px] font-semibold text-stone-500 uppercase hover:text-zen-red transition-colors hover:scale-110 duration-300 whitespace-nowrap">ล็อกอิน</button>
+                <button suppressHydrationWarning onClick={handleLogin} className="px-5 lg:px-6 py-1.5 lg:py-2 border-2 border-zen-red text-zen-red text-[16px] font-semibold rounded-full uppercase hover:bg-zen-red hover:text-white transition-all hover:scale-105 duration-300 whitespace-nowrap">ฝากตัว</button>
               </>
             ) : (
                 <div className="relative ml-2" onMouseLeave={() => setIsDesktopProfileOpen(false)}>
@@ -214,6 +220,9 @@ export default function Page() {
                         <p className="font-header text-zen-red text-[10px] tracking-widest uppercase mb-1">ผู้จารึกอักษร</p>
                         <p className="font-bold text-stone-800 text-sm truncate">{displayName}</p>
                       </div>
+                      <Link href="/profile" className="block w-full text-left px-4 py-3 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header border-b border-stone-200">
+                        โปรไฟล์ของฉัน
+                      </Link>
                       <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm font-header">
                         ออกจากระบบ
                       </button>
@@ -341,6 +350,7 @@ export default function Page() {
             
             {/* Scroll Button */}
             <button 
+              suppressHydrationWarning
               onClick={scrollNext}
               className="hidden md:flex ml-auto items-center justify-center w-10 h-10 rounded-full border border-stone-300 text-stone-600 hover:border-zen-red hover:text-zen-red transition-all shrink-0 hover:bg-zen-red/5"
             >
@@ -411,14 +421,15 @@ export default function Page() {
           <p className="font-light text-stone-600 mb-10 text-lg leading-relaxed">
             มาร่วมแลกเปลี่ยนมุมมองแห่งตัวอักษร เราจะส่งบทความ คติ ข้อคิด และอัปเดตใหม่ๆ ตรงถึงกล่องจดหมายของคุณด้วยภาษาที่งดงามตามแบบฉบับรอยอักษร
           </p>
-          <form className="relative flex items-center shadow-lg hover:shadow-xl transition-shadow duration-300 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form suppressHydrationWarning className="relative flex items-center shadow-lg hover:shadow-xl transition-shadow duration-300 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
             <input 
+              suppressHydrationWarning
               type="email" 
               placeholder="กรอกอีเมลของคุณที่นี่..." 
               className="w-full py-4 pl-6 pr-20 bg-white border border-stone-200 outline-none font-header text-stone-800 focus:border-zen-red transition-colors placeholder:text-stone-400"
               required
             />
-            <button type="submit" className="absolute right-2 p-2 bg-zen-red text-white hover:bg-[#8A1818] transition-colors rounded-sm group flex items-center justify-center w-12 h-10">
+            <button suppressHydrationWarning type="submit" className="absolute right-2 p-2 bg-zen-red text-white hover:bg-[#8A1818] transition-colors rounded-sm group flex items-center justify-center w-12 h-10">
               <MoveRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
