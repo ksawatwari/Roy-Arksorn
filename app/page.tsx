@@ -214,7 +214,7 @@ export default function Page() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ค้นหาบทความ..." 
               className={`absolute right-10 top-1/2 -translate-y-1/2 outline-none bg-transparent border-b py-1 transition-all duration-300 font-header text-sm text-stone-800 focus:border-zen-red
-                ${isSearchOpen ? 'w-48 md:w-64 opacity-100 border-stone-400 pointer-events-auto' : 'w-0 opacity-0 border-transparent pointer-events-none'}`}
+                \${isSearchOpen ? 'w-48 md:w-64 opacity-100 border-stone-400 pointer-events-auto' : 'w-0 opacity-0 border-transparent pointer-events-none'}`}
             />
             <button 
               onClick={() => setIsSearchOpen(!isSearchOpen)} 
@@ -271,10 +271,10 @@ export default function Page() {
 
       {/* Hero Header */}
       <header className="relative text-white pt-24 pb-48 md:pt-40 md:pb-64 px-6 text-center overflow-hidden hero-fade" style={{
-        background: `radial-gradient(ellipse at 30% 20%, rgba(180,50,50,0.3) 0%, transparent 60%),
+        background: \`radial-gradient(ellipse at 30% 20%, rgba(180,50,50,0.3) 0%, transparent 60%),
                      radial-gradient(ellipse at 80% 80%, rgba(140,20,20,0.4) 0%, transparent 50%),
                      radial-gradient(ellipse at 50% 0%, rgba(200,60,60,0.25) 0%, transparent 40%),
-                     linear-gradient(160deg, #4A1515 0%, #6B1D1D 30%, #8B2525 50%, #6B1D1D 70%, #3D0C0C 100%)`
+                     linear-gradient(160deg, #4A1515 0%, #6B1D1D 30%, #8B2525 50%, #6B1D1D 70%, #3D0C0C 100%)\`
       }}>
         <h2 className="relative z-10 font-pattaya text-[5rem] md:text-[10rem] mb-2 leading-none tracking-tighter" style={{ color: "#F5EDE0" }}>
           <span className="opacity-30">รอย</span>อักษร
