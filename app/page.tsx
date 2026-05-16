@@ -7,7 +7,7 @@ import { Search, Menu, X, ArrowRight, ChevronRight, ChevronDown, MoveRight } fro
 import useEmblaCarousel from "embla-carousel-react";
 import { auth, provider, db } from "@/lib/firebase";
 import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function Page() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,6 +18,8 @@ export default function Page() {
   const [userData, setUserData] = useState<any>(null);
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const [isDesktopProfileOpen, setIsDesktopProfileOpen] = useState(false);
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
+  const [showHowToGet, setShowHowToGet] = useState(false);
   
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
 
@@ -81,6 +83,23 @@ export default function Page() {
     }
   };
 
+  const handleClaimReward = async () => {
+    if (userData?.username === "_") {
+      try {
+        await updateDoc(doc(db, "users", user!.uid), {
+          alias: "ภรรยาของผู้สร้างเว็บ"
+        });
+        setUserData({ ...userData, alias: "ภรรยาของผู้สร้างเว็บ" });
+        alert("ยินดีด้วย! ท่านได้รับฉายาระดับตำนานแล้ว");
+        setIsRewardModalOpen(false);
+      } catch (error) {
+        console.error("Error claiming reward:", error);
+      }
+    } else {
+      alert("ท่านยังไม่ผ่านเงื่อนไข: ต้องตั้งชื่อเป็น _ เท่านั้น");
+    }
+  };
+
   const scrollNext = () => {
     if (emblaApi) emblaApi.scrollNext();
   };
@@ -139,9 +158,17 @@ export default function Page() {
           <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
           
           {user && (
-            <button onClick={handleLogout} className="w-full mt-6 py-4 border-t border-stone-200 text-left text-stone-400 text-xl uppercase tracking-widest hover:text-zen-red transition">
-              ออกจากระบบ
-            </button>
+            <div className="mt-6 pt-4 border-t border-stone-200 flex flex-col gap-4">
+              <button onClick={() => { setIsRewardModalOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-purple-600 text-xl tracking-widest hover:text-purple-800 transition flex items-center gap-2">
+                <span>🎁</span> รับของรางวัล
+              </button>
+              <Link href="/edit-profile" onClick={() => setIsMobileMenuOpen(false)} className="text-left text-stone-600 text-xl tracking-widest hover:text-zen-red transition">
+                แก้ไขโปรไฟล์
+              </Link>
+              <button onClick={handleLogout} className="text-left text-zen-red text-xl tracking-widest hover:text-red-800 transition mt-2">
+                ออกจากระบบ
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -214,7 +241,13 @@ export default function Page() {
                         <p className="font-header text-zen-red text-[10px] tracking-widest uppercase mb-1">ผู้จารึกอักษร</p>
                         <p className="font-bold text-stone-800 text-sm truncate">{displayName}</p>
                       </div>
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm font-header">
+                      <button onClick={() => { setIsRewardModalOpen(true); setIsDesktopProfileOpen(false); }} className="w-full text-left px-4 py-2 text-purple-600 font-bold hover:bg-purple-50 transition-colors text-sm font-header flex items-center gap-2">
+                        <span>🎁</span> รับของรางวัล
+                      </button>
+                      <Link href="/edit-profile" className="w-full text-left px-4 py-2 text-stone-600 font-bold hover:bg-stone-50 transition-colors text-sm font-header block">
+                        แก้ไขโปรไฟล์
+                      </Link>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm font-header border-t border-stone-200 mt-1">
                         ออกจากระบบ
                       </button>
                     </div>
@@ -445,6 +478,58 @@ export default function Page() {
           รอยอักษร · RoyAksorn · พ.ศ. ๒๕๖๙
         </p>
       </footer>
+
+      {/* Reward Modal */}
+      {isRewardModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[2000] flex items-center justify-center p-6 backdrop-blur-sm">
+          <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="bg-gradient-to-br from-purple-600 to-purple-900 p-8 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 mix-blend-overlay"></div>
+              <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest backdrop-blur-md border border-white/30">
+                ฉายาระดับตำนาน
+              </span>
+              <h3 className="text-3xl font-bold text-white mb-2 font-charm drop-shadow-md">ภรรยาของผู้สร้างเว็บ</h3>
+            </div>
+            
+            <div className="p-8 font-header text-center">
+              <p className="text-stone-600 text-lg leading-relaxed mb-6">
+                ฉายานี้เป็นฉายาลับระดับตำนานที่จะมีผู้ครอบครองได้แค่คนเดียว
+              </p>
+              
+              <div className="mb-8">
+                <button 
+                  onClick={() => setShowHowToGet(!showHowToGet)}
+                  className="text-sm font-bold text-stone-400 uppercase tracking-widest hover:text-purple-600 transition-colors border-b border-dashed border-stone-300 hover:border-purple-600 pb-0.5"
+                >
+                  วิธีการได้รับ {showHowToGet ? '▲' : '▼'}
+                </button>
+                {showHowToGet && (
+                  <div className="mt-3 bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p className="text-purple-800 text-sm font-medium">
+                      สามารถรับได้เมื่อตั้งชื่อเป็น _ คนแรกเท่านั้น
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setIsRewardModalOpen(false)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors"
+                >
+                  ปิด
+                </button>
+                <button 
+                  onClick={handleClaimReward}
+                  className="flex-1 py-3 px-4 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                >
+                  รับฉายา
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
