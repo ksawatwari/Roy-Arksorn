@@ -8,7 +8,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Link from "next/link";
 import { Pencil, X, ArrowLeft } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+
 
 const badWords = ['ควย', 'เหี้ย', 'เย็ด', 'มึง', 'กู', 'สัด', 'ระยำ', 'fuck', 'shit'];
 
