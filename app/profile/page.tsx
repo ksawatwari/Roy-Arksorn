@@ -934,6 +934,24 @@ export default function ProfilePage() {
                         })}
                     </div>
 
+                    {unlockedAliases.includes("ภรรยาผู้บุกเบิกรอยอักษร") && (
+                       <>
+                         <p className="text-purple-600 mb-4 font-bold text-sm tracking-wide">🏆 ฉายาลับเฉพาะ (Secret Alias)</p>
+                         <div className="mb-8">
+                             <button
+                               onClick={() => setAlias("ภรรยาผู้บุกเบิกรอยอักษร")}
+                               className={`w-full py-4 px-3 rounded-xl text-sm text-center transition-all font-bold ${
+                                 alias === "ภรรยาผู้บุกเบิกรอยอักษร"
+                                   ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_8px_20px_rgba(147,51,234,0.3)] scale-105 z-10 ring-2 ring-purple-300' 
+                                   : 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100 hover:-translate-y-1'
+                               }`}
+                             >
+                               ภรรยาผู้บุกเบิกรอยอักษร
+                             </button>
+                         </div>
+                       </>
+                    )}
+
                     <div className="flex justify-center">
                         <button 
                             onClick={() => setIsAllAliasGridOpen(true)}
@@ -958,7 +976,7 @@ export default function ProfilePage() {
                             <button onClick={() => setIsAllAliasGridOpen(false)} className="p-2 hover:bg-stone-200 rounded-full transition-colors"><ArrowLeft className="w-6 h-6"/></button>
                             คลังฉายาทั้งหมด 
                         </h3>
-                        <p className="text-stone-500 mt-1 ml-11 font-medium text-sm">คุณปลดล็อกไปแล้ว {unlockedAliases.length} / {ALL_ALIASES.length} ฉายา</p>
+                        <p className="text-stone-500 mt-1 ml-11 font-medium text-sm">คุณปลดล็อกไปแล้ว {unlockedAliases.filter(a => ALL_ALIASES.includes(a)).length} / {ALL_ALIASES.length} ฉายา</p>
                     </div>
                     <button onClick={() => { setIsAllAliasGridOpen(false); setIsAliasModalOpen(false); }} className="text-stone-400 hover:bg-red-50 hover:text-red-600 transition-colors p-3 bg-white border border-stone-200 rounded-full">
                         <X className="w-6 h-6"/>
