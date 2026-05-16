@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignJustify, X, Plus, GripVertical } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function WriterPage() {
   return (
@@ -23,6 +24,8 @@ function WriterContent() {
   const [excerpt, setExcerpt] = useState("");
   const [coverStr, setCoverStr] = useState("");
   const [fontSize, setFontSize] = useState<number>(20);
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertType, setAlertType] = useState<"error" | "success" | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
   // toolbar state
@@ -102,8 +105,9 @@ function WriterContent() {
   };
 
   const saveStory = () => {
-    if (fontSize < 14 || fontSize > 32) {
-      alert('ไม่สามารถบันทึกได้! ขนาดฟอนต์อยู่นอกเหนือขอบเขตที่เหมาะสม (ควรอยู่ระหว่าง 14px - 32px)');
+    if (fontSize < 16 || fontSize > 24) {
+      setAlertMsg('ฟอนต์ตั้งต้นควรเป็นขนาด 16-18 เท่านั้น หากใช้ฟอนต์ขนาดอื่นผสมไม่ควรเกิน 3 ใน 10 ส่วน');
+      setAlertType('error');
       return;
     }
 
@@ -131,10 +135,11 @@ function WriterContent() {
 
     try {
         localStorage.setItem('archivist_docs', JSON.stringify(allDocs));
-        alert('จารึกรอยอักษรสำเร็จแล้ว!');
-        router.push('/library');
+        setAlertMsg('จารึกรอยอักษรสำเร็จแล้ว!');
+        setAlertType('success');
     } catch (e) {
-        alert('หน่วยความจำเต็ม! ไม่สามารถเซฟรูปขนาดใหญ่เกินไปได้');
+        setAlertMsg('หน่วยความจำเต็ม! ไม่สามารถเซฟรูปขนาดใหญ่เกินไปได้');
+        setAlertType('error');
     }
   };
 
@@ -161,6 +166,44 @@ function WriterContent() {
 
   return (
     <div className="min-h-screen bg-[#f4f4f2] text-stone-900 font-header relative overflow-x-hidden" suppressHydrationWarning>
+      <AnimatePresence>
+        {alertMsg && (
+          <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             className="fixed inset-0 z-[10000] flex items-center justify-center bg-white/80 backdrop-blur-sm"
+          >
+             <motion.div
+                 initial={{ scale: 0.9, y: 20 }}
+                 animate={{ scale: 1, y: 0 }}
+                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                 className="bg-white p-8 max-w-sm w-full rounded-[30px] shadow-[0_20px_40px_rgba(0,0,0,0.08)] text-center border border-stone-100 flex flex-col items-center"
+             >
+                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-inner ${alertType === 'error' ? 'bg-red-50 text-[#A31D1D]' : 'bg-green-50 text-emerald-600'}`}>
+                    {alertType === 'error' ? (
+                        <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    ) : (
+                        <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                    )}
+                 </div>
+                 <p className="text-stone-600 font-medium text-[15px] leading-relaxed mb-8">{alertMsg}</p>
+                 <button 
+                    onClick={() => {
+                       setAlertMsg("");
+                       if (alertType === 'success') {
+                           router.push('/library');
+                       }
+                    }}
+                    className="bg-[#A31D1D] text-white px-8 py-3 rounded-full font-bold text-sm tracking-wide shadow-md hover:shadow-[0_10px_20px_rgba(163,29,29,0.2)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm transition-all duration-300"
+                 >
+                    ตกลง
+                 </button>
+             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&family=Sarabun:wght@400;500&family=Pridi:wght@400;600&family=Mitr:wght@300;400&family=Kanit:wght@300;400&family=Chakra+Petch:wght@300;400&family=Bai+Jamjuree:wght@300;400&family=Charm:wght@400;700&family=Itim&family=Mali&family=Srisakdi&family=Taviraj&family=Trirong&family=Athiti&family=Krub&family=KoHo&family=Kodchasan&family=Fahkwang&family=Sriracha&family=Prompt:wght@300;400&family=Niramit&family=K2D&family=Jura&family=Sarala&family=Suton&family=Pattaya&family=IBM+Plex+Sans+Thai:wght@300;400&family=Noto+Sans+Thai:wght@300;400&family=Thasadith&family=Chonburi&family=Laila&family=Maitree&family=Siamreap&family=Battambang&family=Krutidev+010&display=swap');
         
@@ -252,8 +295,10 @@ function WriterContent() {
                 <input 
                   type="number" 
                   value={fontSize} 
+                  min={16}
+                  max={24}
                   onChange={(e) => setFontSize(Number(e.target.value))} 
-                  title="ขนาดฟอนต์ (แนะนำ 18-22)"
+                  title="ขนาดฟอนต์ (แนะนำ 16-18)"
                   className={`bg-transparent outline-none text-center font-bold text-stone-600 group-hover:text-[#A31D1D] appearance-none m-0 ${toolbarPos.isVertical ? 'w-8 text-[11px]' : 'w-7 text-[12px]'}`}
                 />
                 {!toolbarPos.isVertical && <span className="text-[10px] text-stone-400 font-bold tracking-wider">PX</span>}
