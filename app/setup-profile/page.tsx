@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import Link from "next/link";
 import { Pencil, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 const badWords = ['ควย', 'เหี้ย', 'เย็ด', 'มึง', 'กู', 'สัด', 'ระยำ', 'fuck', 'shit'];
 
@@ -98,14 +101,18 @@ export default function SetupProfilePage() {
       // Show sacred overlay
       setShowSacredOverlay(true);
       
-      // Generate particles
-      const newParticles = Array.from({ length: 40 }).map((_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 2,
-        duration: Math.random() * 3 + 2
-      }));
+      // Generate radial explosion particles
+      const newParticles = Array.from({ length: 60 }).map((_, i) => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 400 + 100;
+        return {
+          id: i,
+          x: Math.cos(angle) * distance,
+          y: Math.sin(angle) * distance,
+          size: Math.random() * 8 + 4,
+          duration: Math.random() * 2 + 1.5
+        };
+      });
       setParticles(newParticles);
 
       setTimeout(() => setShowSacredText(true), 800);
@@ -127,34 +134,80 @@ export default function SetupProfilePage() {
     <div className="min-h-screen bg-slate-300 flex items-center justify-center p-6 md:p-10 font-header" suppressHydrationWarning>
       
       {/* Sacred Overlay */}
-      <div 
-        className={`fixed inset-0 bg-stone-900/95 z-[5000] flex flex-col items-center justify-center transition-opacity duration-1000 ${showSacredOverlay ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/p6.png')" }}
-      >
-        <div className="w-[300px] h-[300px] border-2 border-[#D4AF37] rounded-full flex items-center justify-center relative animate-pulse shadow-[0_0_50px_rgba(212,175,55,0.2)]">
-          {avatarUrl && (
-            <img src={avatarUrl} alt="Avatar" className="w-[200px] h-[200px] rounded-full object-cover shadow-[0_0_30px_#D4AF37]" referrerPolicy="no-referrer" />
-          )}
-        </div>
-        <h2 className={`font-charm text-[#D4AF37] text-3xl text-center mt-10 transition-all duration-1000 transform ${showSacredText ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
-          นามของท่านถูกจารึกไว้ชั่วนิรันดร์
-        </h2>
+      <AnimatePresence>
+        {showSacredOverlay && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 bg-stone-900/95 z-[5000] flex flex-col items-center justify-center"
+            style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/p6.png')" }}
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: [0.8, 1.1, 1], opacity: 1 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="w-[300px] h-[300px] border-2 border-[#D4AF37] rounded-full flex items-center justify-center relative shadow-[0_0_80px_rgba(212,175,55,0.4)]"
+            >
+              {avatarUrl && (
+                <motion.img 
+                  initial={{ rotate: -10 }}
+                  animate={{ rotate: 0 }}
+                  transition={{ duration: 2, ease: "easeOut" }}
+                  src={avatarUrl} 
+                  alt="Avatar" 
+                  className="w-[200px] h-[200px] rounded-full object-cover shadow-[0_0_50px_#D4AF37]" 
+                  referrerPolicy="no-referrer" 
+                />
+              )}
+            </motion.div>
+            
+            <AnimatePresence>
+              {showSacredText && (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1 }}
+                  className="font-charm text-[#D4AF37] text-3xl md:text-4xl text-center mt-12 tracking-wider drop-shadow-lg"
+                >
+                  นามของท่านถูกจารึกไว้ชั่วนิรันดร์
+                </motion.h2>
+              )}
+            </AnimatePresence>
 
-        {particles.map(p => (
-          <div 
-            key={p.id}
-            className="absolute bg-[#D4AF37] rounded-full pointer-events-none animate-bounce"
-            style={{
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              left: `${p.x}vw`,
-              top: `${p.y}vh`,
-              animationDuration: `${p.duration}s`,
-              opacity: 0.8
-            }}
-          />
-        ))}
-      </div>
+            {/* Sacred Particles */}
+            {particles.map((p) => (
+              <motion.div
+                key={p.id}
+                initial={{ 
+                  opacity: 1, 
+                  scale: 0,
+                  x: "-50%",
+                  y: "-50%" 
+                }}
+                animate={{ 
+                  opacity: [1, 0.8, 0],
+                  scale: [0, p.size / 4, p.size / 2],
+                  x: `calc(-50% + ${p.x}px)`,
+                  y: `calc(-50% + ${p.y}px)`
+                }}
+                transition={{ 
+                  duration: p.duration, 
+                  ease: "easeOut"
+                }}
+                className="absolute bg-[#D4AF37] rounded-full pointer-events-none shadow-[0_0_10px_#D4AF37]"
+                style={{
+                  width: `${p.size}px`,
+                  height: `${p.size}px`,
+                  left: '50%',
+                  top: '50%'
+                }}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="w-full max-w-[1180px] min-h-[700px] bg-white rounded shadow-[0_60px_120px_rgba(0,0,0,0.3)] flex flex-col md:flex-row relative">
         
@@ -237,7 +290,7 @@ export default function SetupProfilePage() {
           <div className="mb-6 md:mb-8">
             <label className="text-[11px] text-stone-400 font-bold uppercase tracking-[2px] mb-2 block">ตัวเลือกอวาตาร์</label>
             <button 
-               onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsModalOpen(true)}
               className="bg-white border border-stone-300 px-6 py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:border-zen-red hover:text-zen-red flex items-center gap-2 transition-all w-fit"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
