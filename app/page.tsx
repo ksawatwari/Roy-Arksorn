@@ -182,8 +182,8 @@ export default function Page() {
               หมวดหมู่ <ChevronDown className="w-4 h-4 transition-transform group-hover:rotate-180" />
             </div>
             {/* Dropdown Content */}
-            <div className="absolute left-0 top-full pt-4 w-64 z-[1000] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-              <div className="bg-parchment border border-parchment-dark rounded shadow-2xl flex flex-col overflow-hidden">
+            <div className="absolute left-0 top-full pt-4 w-64 z-[1000] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+              <div className="bg-parchment border border-parchment-dark rounded shadow-2xl flex flex-col overflow-hidden pointer-events-auto">
                 <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Originals / ออริจินัล</Link>
                 <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Essays / บทพิจารณ์</Link>
                 <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Journal / วิถีอักษร</Link>
@@ -191,8 +191,8 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <Link href="/library" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">งานเขียนของข้าพเจ้า</Link>
-          <Link href="#" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">เกี่ยวกับ</Link>
+          <Link href="/library" className="relative z-50 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto">งานเขียนของข้าพเจ้า</Link>
+          <Link href="#" className="relative z-50 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap pointer-events-auto">เกี่ยวกับ</Link>
         </div>
 
         {/* Center Logo */}
