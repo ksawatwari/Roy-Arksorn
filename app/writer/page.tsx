@@ -17,8 +17,10 @@ function WriterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const idValue = searchParams.get('id');
+  const catValue = searchParams.get('cat');
   
   const [currentId, setCurrentId] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
   
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -38,6 +40,7 @@ function WriterContent() {
   useEffect(() => {
     const id = idValue || Date.now().toString();
     setCurrentId(id);
+    if (catValue) setCategory(catValue);
 
     const savedData = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
     const activeDoc = savedData.find((d: any) => d.id == id);
@@ -45,6 +48,7 @@ function WriterContent() {
     if (activeDoc) {
       setTitle(activeDoc.title || "");
       setExcerpt(activeDoc.excerpt || "");
+      if (activeDoc.category) setCategory(activeDoc.category);
       if (activeDoc.fontSize) setFontSize(activeDoc.fontSize);
       if (editorRef.current) {
         editorRef.current.innerHTML = activeDoc.content || "";
@@ -53,9 +57,11 @@ function WriterContent() {
          setCoverStr(activeDoc.cover);
       }
     }
-  }, [idValue]);
+  }, [idValue, catValue]);
 
   // Handle Dragging
+  const handleMouseUpRef = useRef<() => void>(() => {});
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!toolbarRef.current) return;
     let targetX = e.clientX - startPosRef.current.x;
@@ -78,11 +84,11 @@ function WriterContent() {
     setToolbarPos({ x: targetX, y: targetY, isVertical });
   }, []);
 
-  const handleMouseUp = useCallback(() => {
+  handleMouseUpRef.current = () => {
     setIsDragging(false);
     document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-  }, [handleMouseMove]);
+    document.removeEventListener('mouseup', handleMouseUpRef.current);
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.toolbar-handle')) {
@@ -94,7 +100,7 @@ function WriterContent() {
           y: e.clientY - rect.top
         };
         document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mouseup', handleMouseUpRef.current);
       }
     }
   };
@@ -124,6 +130,7 @@ function WriterContent() {
         content: contentBody,
         cover: coverStr,
         fontSize: fontSize,
+        category: category,
         updated: Date.now()
     };
 
@@ -326,9 +333,16 @@ function WriterContent() {
       </div>
 
       <div className="max-w-[880px] mx-auto pt-[140px] pb-[100px] px-4 md:px-0 relative">
-        <button onClick={() => router.push('/library')} className="mb-6 text-sm text-stone-500 hover:text-[#A31D1D] flex items-center gap-2">
-          ← กลับสู่คลัง
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => router.push('/library')} className="text-sm text-stone-500 hover:text-[#A31D1D] flex items-center gap-2">
+            ← กลับสู่คลัง
+          </button>
+          {category && (
+            <span className="text-xs font-bold px-3 py-1 bg-stone-200 text-stone-600 rounded-full tracking-wider uppercase border border-stone-300">
+              {category}
+            </span>
+          )}
+        </div>
 
         <div className="bg-white rounded-[28px] p-6 md:p-[35px] mb-[30px] border border-[#efefef] shadow-[0_5px_25px_rgba(0,0,0,0.02)] flex flex-col md:flex-row gap-6 md:gap-[30px] items-center">
             <div className="relative w-[120px] h-[160px] shrink-0 bg-[#fafafa] rounded-[18px]">
@@ -377,6 +391,12 @@ function WriterContent() {
               ref={editorRef}
               contentEditable="true" 
               spellCheck="false"
+              onKeyDown={(e) => {
+                if (e.key === 'Tab') {
+                  e.preventDefault();
+                  document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+                }
+              }}
             ></div>
         </div>
       </div>
