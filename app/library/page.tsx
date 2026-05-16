@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X, PenLine, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, PenLine, ChevronLeft, ChevronRight, ArrowUp, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged, User, signOut } from "firebase/auth";
+import { doc, getDoc, collection, addDoc } from "firebase/firestore";
 
 const CATEGORIES = [
   {
@@ -51,6 +54,15 @@ const CATEGORIES = [
 
 export default function LibraryPage() {
   const router = useRouter();
+  
+  // Auth state
+  const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<any>(null);
+  
+  const [isDesktopProfileOpen, setIsDesktopProfileOpen] = useState(false);
+  const [isProfileMenuPinned, setIsProfileMenuPinned] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
   const [docs, setDocs] = useState<any[]>([]);
   const [docIdToDelete, setDocIdToDelete] = useState<number | null>(null);
   
@@ -58,11 +70,50 @@ export default function LibraryPage() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [currentCatIndex, setCurrentCatIndex] = useState(0);
 
+  // Upload to profile state
+  const [isUploadMode, setIsUploadMode] = useState(false);
+  const [selectedDocsForUpload, setSelectedDocsForUpload] = useState<number[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(-1);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const savedDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
     setDocs(savedDocs.sort((a: any, b: any) => b.updated - a.updated));
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        }
+      } else {
+        setUser(null);
+        setUserData(null);
+      }
+    });
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuPinned(false);
+        setIsDesktopProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
 
   const openDeleteModal = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -96,8 +147,76 @@ export default function LibraryPage() {
     router.push(`/writer?cat=${encodeURIComponent(cat.name)}`);
   };
 
+  const toggleUploadMode = () => {
+    setIsUploadMode(!isUploadMode);
+    setSelectedDocsForUpload([]);
+    setUploadProgress(-1);
+  };
+
+  const handleDocClick = (docId: number) => {
+    if (isUploadMode) {
+       setSelectedDocsForUpload(prev => 
+         prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]
+       );
+    } else {
+       router.push(`/writer?id=${docId}`);
+    }
+  };
+
+  const handleUploadSelected = async () => {
+    if (!user || selectedDocsForUpload.length === 0) {
+      if (!user) alert("กรุณาล็อกอินก่อนทำการอัปโหลด");
+      return;
+    }
+    
+    try {
+      setUploadProgress(0);
+      const total = selectedDocsForUpload.length;
+      let count = 0;
+      
+      for (const id of selectedDocsForUpload) {
+        const docObj = docs.find(d => d.id === id);
+        if (!docObj) continue;
+        
+        const newPost = {
+          uid: user.uid,
+          text: `ได้เพิ่มผลงานใหม่เข้าคลัง: ${docObj.title || 'Untitled'}`,
+          createdAt: Date.now(),
+          workId: docObj.id.toString(), // ensure string
+          workTitle: docObj.title || 'Untitled',
+          workExcerpt: docObj.excerpt || '',
+          workCategory: docObj.category || 'Original / ออริจินัล',
+          workCover: docObj.cover || '',
+        };
+        await addDoc(collection(db, "posts"), newPost);
+        count++;
+        setUploadProgress(Math.round((count / total) * 100));
+      }
+      
+      setTimeout(() => {
+        setIsUploadMode(false);
+        setSelectedDocsForUpload([]);
+        setUploadProgress(-1);
+        alert("อัปโหลดสำเร็จแล้ว เข้าไปดูได้ที่หน้าโปรไฟล์ของคุณ");
+      }, 500);
+    } catch (e) {
+      console.error(e);
+      alert("เกิดข้อผิดพลาดในการอัปโหลด");
+      setUploadProgress(-1);
+    }
+  };
+
+  const displayName = userData?.username || user?.displayName || "ผู้จารึกอักษร";
+  const profileImg = userData?.avatarUrl || user?.photoURL || `https://ui-avatars.com/api/?name=${displayName}&background=A31D1D&color=fff`;
+
+  // Filter categories that have documents
+  const activeCategories = CATEGORIES.filter(cat => docs.some(d => (d.category || "Original / ออริจินัล") === cat.name));
+  
+  // If there's a document with a category not in CATEGORIES, we fall back to "Original / ออริจินัล". 
+  // It's handled gracefully since d.category || ... defaults to original.
+
   return (
-    <div className="min-h-screen bg-[#fdfdfd] font-header text-stone-900 selection:bg-zen-red selection:text-white pb-20">
+    <div className="min-h-screen bg-[#fdfdfd] font-header text-stone-900 selection:bg-zen-red selection:text-white pb-20 relative overflow-x-hidden">
       
       {/* Category Modal */}
       <AnimatePresence>
@@ -215,13 +334,52 @@ export default function LibraryPage() {
               >
                 <PenLine size={16} /> เขียนเรื่องใหม่
               </button>
+
+              {user && (
+                <div 
+                  className="relative ml-2" 
+                  ref={profileMenuRef}
+                  onMouseLeave={() => { if (!isProfileMenuPinned) setIsDesktopProfileOpen(false); }}
+                >
+                  <div 
+                    className="cursor-pointer transition-transform hover:scale-105" 
+                    onMouseEnter={() => setIsDesktopProfileOpen(true)}
+                    onClick={() => {
+                        setIsProfileMenuPinned(!isProfileMenuPinned);
+                        setIsDesktopProfileOpen(true);
+                    }}
+                  >
+                    <img src={profileImg} className="w-10 h-10 rounded-full border-2 border-zen-red object-cover shadow-sm bg-white" alt="User" referrerPolicy="no-referrer" />
+                  </div>
+                  {(isDesktopProfileOpen || isProfileMenuPinned) && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden py-2 z-[60]">
+                      <div className="px-4 py-3 border-b border-stone-100">
+                        <p className="text-zen-red text-[10px] tracking-widest uppercase mb-1 font-bold">ผู้จารึกอักษร</p>
+                        <p className="font-bold text-stone-800 text-sm truncate">{displayName}</p>
+                      </div>
+                      <Link href="/profile" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm">
+                        โปรไฟล์ของฉัน
+                      </Link>
+                      <Link href="/inbox" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm">
+                        กล่องจดหมาย
+                      </Link>
+                      <Link href="/achievements" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm border-b border-stone-100">
+                        ความสำเร็จ
+                      </Link>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm">
+                        ออกจากระบบ
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
       </nav>
 
       <div className="max-w-6xl mx-auto py-12 md:py-16 px-6">
-          <div className="flex justify-between items-end mb-10 md:mb-12">
+          <div className="flex justify-between items-end mb-16">
               <div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 tracking-tight">คลังรอยอักษร</h1>
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 tracking-tight">คลังรอยอักษร</h1>
                   <p className="text-gray-500 italic text-lg font-light">&quot;เมื่อตัวอักษร... เริ่มเล่าเรื่อง&quot;</p>
               </div>
               <div className="text-right shrink-0">
@@ -230,56 +388,161 @@ export default function LibraryPage() {
               </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {docs.length === 0 ? (
-              <div className="col-span-full py-24 text-center text-gray-400 border-2 border-dashed border-gray-200 rounded-[32px] bg-gray-50 flex flex-col items-center justify-center">
-                <PenLine className="w-12 h-12 mb-4 text-gray-300" />
-                <p className="text-lg font-light">ยังไม่มีผลงานที่ถูกจารึกไว้ในคลังของท่าน</p>
-                <button 
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="mt-6 text-[#A31D1D] border-b border-[#A31D1D] pb-0.5 hover:opacity-70 transition-opacity"
-                >
-                  เริ่มจารึกรอยอักษรแรก
-                </button>
-              </div>
-            ) : (
-              docs.map((doc: any) => (
-                <div 
-                  key={doc.id}
-                  onClick={() => router.push(`/writer?id=${doc.id}`)}
-                  className="bg-white border border-gray-100 p-6 rounded-[32px] hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(163,29,29,0.1)] transition-all duration-300 cursor-pointer flex flex-col group"
-                >
-                  <div className="h-[160px] bg-stone-50 rounded-2xl mb-5 overflow-hidden flex items-center justify-center w-full relative">
-                      {doc.cover ? (
-                        <img src={doc.cover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
-                      ) : (
-                        <div className="bg-gradient-to-br from-[#f5f5f5] to-[#ececec] w-full h-full flex flex-col items-center justify-center text-[#ccc] border border-stone-100">
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mb-2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                          <span className="text-[9px] uppercase tracking-[0.2em] font-bold">ปราศจากรอยจารึก</span>
-                        </div>
-                      )}
+          {docs.length === 0 ? (
+            <div className="py-24 text-center text-gray-400 border-2 border-dashed border-gray-200 rounded-[32px] bg-gray-50 flex flex-col items-center justify-center">
+              <PenLine className="w-12 h-12 mb-4 text-gray-300" />
+              <p className="text-lg font-light">ยังไม่มีผลงานที่ถูกจารึกไว้ในคลังของท่าน</p>
+              <button 
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="mt-6 text-[#A31D1D] border-b border-[#A31D1D] pb-0.5 hover:opacity-70 transition-opacity font-bold"
+              >
+                เริ่มจารึกรอยอักษรแรก
+              </button>
+            </div>
+          ) : (
+            <div>
+              {activeCategories.map(cat => {
+                const catDocs = docs.filter(d => (d.category || "Original / ออริจินัล") === cat.name);
+                if (catDocs.length === 0) return null;
+                
+                return (
+                  <div key={cat.name} className="mb-14">
+                    <h2 className="text-2xl font-bold text-stone-800 mb-8 flex items-center gap-3 border-b border-stone-200 pb-3">
+                      <span className="w-4 h-4 rounded-full bg-[#A31D1D] shadow-[0_2px_10px_rgba(163,29,29,0.4)]"></span>
+                      {cat.name}
+                      <span className="text-sm font-light text-stone-400 ml-2">({catDocs.length})</span>
+                    </h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {catDocs.map((doc: any) => {
+                        const isSelected = selectedDocsForUpload.includes(doc.id);
+                        
+                        return (
+                          <div 
+                            key={doc.id}
+                            onClick={() => handleDocClick(doc.id)}
+                            className={`bg-white border p-6 rounded-[32px] transition-all duration-300 cursor-pointer flex flex-col group relative ${
+                              isUploadMode 
+                                ? isSelected 
+                                  ? 'border-zen-red ring-2 ring-zen-red opacity-100 shadow-[0_15px_30px_rgba(163,29,29,0.15)] scale-[1.02]' 
+                                  : 'border-gray-100 opacity-50 hover:opacity-100 scale-95' 
+                                : 'border-gray-100 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,0,0,0.06)]'
+                            }`}
+                          >
+                            {isUploadMode && isSelected && (
+                              <div className="absolute -top-3 -right-3 bg-zen-red text-white w-8 h-8 flex justify-center items-center rounded-full shadow z-[20] border-2 border-white">
+                                <CheckCircle2 size={18} strokeWidth={3} />
+                              </div>
+                            )}
+                            {isUploadMode && !isSelected && (
+                              <div className="absolute -top-3 -right-3 w-8 h-8 border-[3px] border-stone-200 rounded-full z-[20] bg-white transition-colors group-hover:border-zen-red/50"></div>
+                            )}
+                            
+                            <div className="h-[160px] bg-stone-50 rounded-2xl mb-5 overflow-hidden flex items-center justify-center w-full relative">
+                                {doc.cover ? (
+                                  <img src={doc.cover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Cover" />
+                                ) : (
+                                  <div className="bg-gradient-to-br from-[#f5f5f5] to-[#ececec] w-full h-full flex flex-col items-center justify-center text-[#ccc] border border-stone-100">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mb-2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold">ปราศจากรอยจารึก</span>
+                                  </div>
+                                )}
+                            </div>
+                            
+                            {!isUploadMode ? (
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="w-10 h-1 border-t-4 border-[#A31D1D]"></div>
+                                    <button 
+                                      onClick={(e) => openDeleteModal(e, doc.id)} 
+                                      className="text-gray-300 hover:text-red-500 transition-colors p-1 z-10"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="w-10 h-1 border-t-4 border-[#A31D1D]"></div>
+                                </div>
+                            )}
+                            
+                            <h3 className="text-2xl font-bold text-gray-800 mb-3 line-clamp-1 group-hover:text-[#A31D1D] transition-colors">{doc.title || 'Untitled'}</h3>
+                            <p className="text-gray-500 text-sm line-clamp-2 mb-6 font-light leading-relaxed">{doc.excerpt || 'รอยจารึกที่ยังไม่มีคำโปรย...'}</p>
+                            
+                            <div className="mt-auto pt-4 border-t border-gray-100 text-[10px] text-gray-400 flex justify-between uppercase tracking-wider font-bold">
+                                <span>Last Update</span>
+                                <span>{new Date(doc.updated).toLocaleDateString('th-TH')}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                  <div className="flex justify-between items-start mb-4">
-                      <div className="w-10 h-1 border-t-4 border-[#A31D1D]"></div>
-                      <button 
-                        onClick={(e) => openDeleteModal(e, doc.id)} 
-                        className="text-gray-300 hover:text-red-500 transition-colors p-1"
-                      >
-                          <X size={18} />
-                      </button>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3 line-clamp-1 group-hover:text-[#A31D1D] transition-colors">{doc.title || 'Untitled'}</h3>
-                  <p className="text-gray-500 text-sm line-clamp-2 mb-6 font-light leading-relaxed">{doc.excerpt || 'รอยจารึกที่ยังไม่มีคำโปรย...'}</p>
-                  
-                  <div className="mt-auto pt-4 border-t border-gray-100 text-[10px] text-gray-400 flex justify-between uppercase tracking-wider font-bold">
-                      <span>Last Update</span>
-                      <span>{new Date(doc.updated).toLocaleDateString('th-TH')}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                )
+              })}
+            </div>
+          )}
       </div>
+
+      {docs.length > 0 && user && (
+        <>
+          {/* Upload Widget Trigger */}
+          <button
+            onClick={toggleUploadMode}
+            className={`fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-lg flex justify-center items-center hover:scale-105 active:scale-95 transition-all z-[80] ${
+              isUploadMode ? 'bg-stone-800 text-white' : 'bg-[#A31D1D] text-white'
+            }`}
+          >
+            <ArrowUp size={24} className={isUploadMode ? "rotate-180 transition-transform" : "transition-transform"} />
+          </button>
+
+          {/* Upload Widget Popup */}
+          <AnimatePresence>
+            {isUploadMode && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                className="fixed bottom-24 right-8 w-[280px] bg-white rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-stone-100 p-5 z-[80]"
+              >
+                <div className="flex justify-between items-start mb-2">
+                   <h3 className="text-lg font-bold text-stone-800">อัปโหลดผลงาน</h3>
+                   <button onClick={toggleUploadMode} className="text-stone-400 hover:text-stone-700 bg-stone-100 rounded-full p-1"><X size={14}/></button>
+                </div>
+                <p className="text-xs text-stone-500 font-light mb-4 leading-relaxed">
+                  เลือกผลงานจากคลังเพื่ออัปโหลดไปยังหน้าโปรไฟล์ของคุณ
+                </p>
+                
+                <div className="mb-4">
+                  <span className="text-sm font-bold text-stone-800">
+                    เลือกแล้ว: <span className="text-[#A31D1D]">{selectedDocsForUpload.length}</span> งาน
+                  </span>
+                </div>
+
+                {uploadProgress >= 0 ? (
+                  <div className="mb-2">
+                     <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#A31D1D] transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                     </div>
+                     <p className="text-xs text-center text-stone-500 mt-2 font-bold">กำลังอัปโหลด... {uploadProgress}%</p>
+                  </div>
+                ) : (
+                  <button
+                    disabled={selectedDocsForUpload.length === 0 || !user}
+                    onClick={handleUploadSelected}
+                    className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all ${
+                      selectedDocsForUpload.length > 0 && user
+                        ? 'bg-[#A31D1D] text-white shadow-md hover:bg-[#8f1717] active:scale-95' 
+                        : 'bg-stone-100 text-stone-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {!user ? "กรุณาล็อกอินก่อน" : selectedDocsForUpload.length > 0 ? "อัปโหลดงานที่เลือก" : "กรุณาเลือกงาน"}
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }
