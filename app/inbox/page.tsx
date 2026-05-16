@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, MailOpen, Mail, X } from "lucide-react";
+import { ArrowLeft, MailOpen, Mail, X, Gift } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 interface Letter {
   id: string;
@@ -14,6 +14,7 @@ interface Letter {
   sender: string;
   content: string;
   read: boolean;
+  isSpecial?: boolean;
 }
 
 const INITIAL_LETTERS: Letter[] = [
@@ -40,23 +41,64 @@ const INITIAL_LETTERS: Letter[] = [
 
 export default function InboxPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [letters, setLetters] = useState<Letter[]>([]);
   const [selectedLetterId, setSelectedLetterId] = useState<string | null>(null);
   const [isMobilePopupOpen, setIsMobilePopupOpen] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // Load letters from localStorage or initialize with welcome letter
-        const stored = localStorage.getItem(`ROY_AKSORN_INBOX_${currentUser.uid}`);
-        if (stored) {
-          setLetters(JSON.parse(stored));
-        } else {
-          setLetters(INITIAL_LETTERS);
-          localStorage.setItem(`ROY_AKSORN_INBOX_${currentUser.uid}`, JSON.stringify(INITIAL_LETTERS));
+        let currentData = null;
+        try {
+          const udRef = doc(db, "users", currentUser.uid);
+          const udSnap = await getDoc(udRef);
+          if (udSnap.exists()) {
+            currentData = udSnap.data();
+            setUserData(currentData);
+          }
+        } catch (e) {
+          console.error(e);
         }
+
+        const nameToCheck = currentData?.username || currentUser.displayName || "";
+        const isEligibleForWifeAlias = nameToCheck.includes("_");
+
+        const stored = localStorage.getItem(`ROY_AKSORN_INBOX_${currentUser.uid}`);
+        let parsedLetters: Letter[] = stored ? JSON.parse(stored) : INITIAL_LETTERS;
+
+        if (isEligibleForWifeAlias && !parsedLetters.find((l: Letter) => l.id === "special-wife-alias")) {
+           parsedLetters = [
+             {
+               id: "special-wife-alias",
+               title: "ของขวัญแด่ผู้บุกเบิก...",
+               date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+               sender: "ผู้ดูแลคลังอักษร",
+               content: `เรียน ท่านผู้มีนามอันเป็นเอกลักษณ์,
+
+ระบบได้ค้นพบว่าบัญชีของท่าน ได้ทำการสมัครเข้ามาพร้อมกับสัญลักษณ์ underscore (_) ในชื่อ... 
+
+ในฐานะของ "ผู้บุกเบิกรอยอักษรคนแรก" ที่มีสัญลักษณ์นี้ เราจึงขอส่งมอบของขวัญพิเศษซึ่งถูกซ่อนไว้ในสารบบ เป็นฉายาลับเกียรติยศที่จะมีเพียงท่านผู้เดียวเท่านั้นที่สามารถครอบครองได้
+
+ฉายานี้คือ:
+"ภรรยาผู้บุกเบิกรอยอักษร"
+
+ขอให้ท่านกดรับที่ปุ่มด้านล่าง เมื่อรับแล้ว ฉายาจะถูกเพิ่มเข้าไปในหน้าจอแก้ไขโปรไฟล์ของท่าน ซึ่งท่านจะสามารถเลือกใช้งานหรือถอดออกได้ตามต้องการ
+
+ด้วยความปรารถนาดี,
+ผู้สร้างรอยอักษร`,
+               read: false,
+               isSpecial: true,
+             },
+             ...parsedLetters
+           ];
+           localStorage.setItem(`ROY_AKSORN_INBOX_${currentUser.uid}`, JSON.stringify(parsedLetters));
+        }
+        
+        setLetters(parsedLetters);
       }
       setLoading(false);
     });
@@ -78,11 +120,62 @@ export default function InboxPage() {
     setIsMobilePopupOpen(false);
   };
 
+  const handleClaimSpecialAlias = async () => {
+    if (!user || isClaiming || !userData) return;
+    setIsClaiming(true);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const currentAliases = userData.unlockedAliases || [];
+      const newAlias = "ภรรยาผู้บุกเบิกรอยอักษร";
+      
+      if (!currentAliases.includes(newAlias)) {
+        const updatedAliases = [...currentAliases, newAlias];
+        await updateDoc(userRef, { 
+           unlockedAliases: updatedAliases,
+           hasClaimedWifeAlias: true 
+        });
+        setUserData({ ...userData, unlockedAliases: updatedAliases, hasClaimedWifeAlias: true });
+        alert("ยินดีด้วย! ฉายาลับ 'ภรรยาผู้บุกเบิกรอยอักษร' ได้ถูกเพิ่มลงในคลังฉายาของท่านแล้ว สามารถเข้าไปเลือกใช้ได้ที่หน้าแก้ไขโปรไฟล์");
+      } else {
+        alert("ท่านได้รับฉายานี้ไปแล้ว เข้าไปเปลี่ยนได้ที่หน้าแก้ไขโปรไฟล์");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("เกิดข้อผิดพลาดในการรับฉายา");
+    }
+    setIsClaiming(false);
+  };
+
   if (loading) {
      return <div className="min-h-screen bg-stone-100 flex items-center justify-center font-header">กำลังโหลด...</div>;
   }
 
   const selectedLetter = letters.find(l => l.id === selectedLetterId);
+
+  const renderLetterContent = (letter: Letter) => (
+    <>
+      <div className="max-w-2xl text-stone-800 text-lg leading-[2.2] font-light whitespace-pre-wrap">
+        {letter.content}
+      </div>
+      {letter.isSpecial && (
+        <div className="mt-10 pt-8 border-t border-stone-200/50 flex justify-center">
+            {userData?.hasClaimedWifeAlias ? (
+               <div className="bg-stone-100 border border-stone-200 px-6 py-3 rounded-xl text-stone-500 font-bold flex items-center gap-2">
+                 ฉันได้รับของขวัญชิ้นนี้แล้ว
+               </div>
+            ) : (
+               <button 
+                  onClick={handleClaimSpecialAlias}
+                  disabled={isClaiming}
+                  className="bg-zen-red border border-zen-red px-8 py-4 rounded-full shadow-[0_10px_30px_rgba(163,29,29,0.2)] text-white hover:bg-[#8f1717] hover:shadow-xl hover:-translate-y-1 transition-all active:translate-y-0 font-bold flex items-center gap-3 text-lg"
+               >
+                 <Gift className="w-6 h-6"/> {isClaiming ? "กำลังรับของขวัญ..." : "กดรับฉายาลับ"}
+               </button>
+            )}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-[#fdfdfd] font-header pb-20">
@@ -157,9 +250,7 @@ export default function InboxPage() {
                     </div>
                     
                     <div className="flex-1 overflow-y-auto p-8 md:p-12 bg-parchment relative">
-                       <div className="max-w-2xl text-stone-800 text-lg leading-[2.2] font-light whitespace-pre-wrap">
-                          {selectedLetter.content}
-                       </div>
+                       {renderLetterContent(selectedLetter)}
                     </div>
                   </>
                )}
@@ -187,9 +278,7 @@ export default function InboxPage() {
                </div>
                
                <div className="flex-1 overflow-y-auto p-6 bg-parchment">
-                  <div className="text-stone-800 text-[17px] leading-[2] font-light whitespace-pre-wrap">
-                     {selectedLetter.content}
-                  </div>
+                  {renderLetterContent(selectedLetter)}
                </div>
                
             </div>
