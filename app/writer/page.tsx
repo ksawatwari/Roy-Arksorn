@@ -22,13 +22,14 @@ function WriterContent() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [coverStr, setCoverStr] = useState("");
+  const [fontSize, setFontSize] = useState<number>(20);
   const editorRef = useRef<HTMLDivElement>(null);
 
   // toolbar state
   const [isFolded, setIsFolded] = useState(false);
   const [toolbarPos, setToolbarPos] = useState({ x: -1, y: 25, isVertical: false }); // x=-1 means centered initially
+  const [isDragging, setIsDragging] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ function WriterContent() {
     if (activeDoc) {
       setTitle(activeDoc.title || "");
       setExcerpt(activeDoc.excerpt || "");
+      if (activeDoc.fontSize) setFontSize(activeDoc.fontSize);
       if (editorRef.current) {
         editorRef.current.innerHTML = activeDoc.content || "";
       }
@@ -52,30 +54,36 @@ function WriterContent() {
 
   // Handle Dragging
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!draggingRef.current || !toolbarRef.current) return;
+    if (!toolbarRef.current) return;
     let targetX = e.clientX - startPosRef.current.x;
     let targetY = e.clientY - startPosRef.current.y;
 
-    let isVertical = false;
-    if (targetX < 120 || targetX > window.innerWidth - 180) {
-      isVertical = true;
+    // Magnetism: Dock to top center
+    if (targetY < 60 && Math.abs(targetX + toolbarRef.current.offsetWidth/2 - window.innerWidth/2) < 150) {
+      targetX = -1; // Snap to center
+      targetY = 25;
+    } else {
+      targetX = Math.max(0, Math.min(targetX, window.innerWidth - toolbarRef.current.offsetWidth));
+      targetY = Math.max(0, Math.min(targetY, window.innerHeight - toolbarRef.current.offsetHeight));
     }
 
-    targetX = Math.max(0, Math.min(targetX, window.innerWidth - toolbarRef.current.offsetWidth));
-    targetY = Math.max(0, Math.min(targetY, window.innerHeight - toolbarRef.current.offsetHeight));
+    let isVertical = false;
+    if (targetX !== -1 && (targetX < 120 || targetX > window.innerWidth - 180)) {
+      isVertical = true;
+    }
 
     setToolbarPos({ x: targetX, y: targetY, isVertical });
   }, []);
 
   const handleMouseUp = useCallback(() => {
-    draggingRef.current = false;
+    setIsDragging(false);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   }, [handleMouseMove]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.toolbar-handle')) {
-      draggingRef.current = true;
+      setIsDragging(true);
       const rect = toolbarRef.current?.getBoundingClientRect();
       if (rect) {
         startPosRef.current = {
@@ -94,6 +102,11 @@ function WriterContent() {
   };
 
   const saveStory = () => {
+    if (fontSize < 14 || fontSize > 32) {
+      alert('ไม่สามารถบันทึกได้! ขนาดฟอนต์อยู่นอกเหนือขอบเขตที่เหมาะสม (ควรอยู่ระหว่าง 14px - 32px)');
+      return;
+    }
+
     const titleInput = title || "Untitled Story";
     const contentBody = editorRef.current?.innerHTML || "";
 
@@ -106,6 +119,7 @@ function WriterContent() {
         excerpt: excerpt,
         content: contentBody,
         cover: coverStr,
+        fontSize: fontSize,
         updated: Date.now()
     };
 
@@ -153,7 +167,7 @@ function WriterContent() {
         #editor-content {
             outline: none;
             font-family: 'Sarabun';
-            font-size: 20px;
+            font-size: ${fontSize}px;
             line-height: 2.4;
             color: #2c2c2c;
             text-align: justify;
@@ -170,14 +184,15 @@ function WriterContent() {
         ref={toolbarRef}
         onMouseDown={handleMouseDown}
         onClick={() => { if (isFolded) setIsFolded(false); }}
-        className={`fixed z-[9999] bg-[rgba(255,255,255,0.95)] border border-[#e2e2e2] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center backdrop-blur-md transition-[border-radius,width,height,padding,background,box-shadow,flex-direction] duration-400 ease-[cubic-bezier(0.19,1,0.22,1)] select-none
+        className={`fixed z-[9999] bg-[rgba(255,255,255,0.95)] border border-[#e2e2e2] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center backdrop-blur-md select-none
           ${isFolded ? 'w-[52px] h-[52px] rounded-[15px] p-0 bg-[#A31D1D] justify-center cursor-pointer shadow-[0_10px_25px_rgba(163,29,29,0.4)] border-none' : 'rounded-[22px] p-[10px_14px] gap-3'}
           ${toolbarPos.isVertical && !isFolded ? 'flex-col w-[68px] h-auto p-[24px_10px]' : 'flex-row'}
         `}
         style={{
-          left: toolbarPos.x === -1 ? '50%' : `${Math.round(toolbarPos.x + (toolbarRef.current?.offsetWidth || 0)/2)}px`,
+          left: toolbarPos.x === -1 ? '50%' : `${Math.round(toolbarPos.x)}px`,
           top: `${Math.round(toolbarPos.y)}px`,
-          transform: toolbarPos.x === -1 ? 'translateX(-50%)' : 'none'
+          transform: toolbarPos.x === -1 ? 'translateX(-50%)' : 'none',
+          transition: isDragging ? 'none' : 'width 0.4s, height 0.4s, background 0.4s, box-shadow 0.4s, border-radius 0.4s, left 0.4s ease-out, top 0.4s ease-out, transform 0.4s'
         }}
       >
         {!isFolded && (
@@ -205,7 +220,7 @@ function WriterContent() {
 
               <select 
                 onChange={(e) => execCmd('fontName', e.target.value)}
-                className={`text-[12px] font-semibold outline-none bg-transparent cursor-pointer ${toolbarPos.isVertical ? 'w-[50px] text-[10px]' : 'max-w-[120px]'}`}
+                className={`text-[12px] font-semibold outline-none bg-transparent cursor-pointer hover:text-[#A31D1D] transition-colors ${toolbarPos.isVertical ? 'w-[50px] text-[10px] mb-2' : 'max-w-[80px]'}`}
               >
                 <optgroup label="ยอดนิยม">
                     <option value="Sarabun">Sarabun</option>
@@ -233,6 +248,17 @@ function WriterContent() {
                 </optgroup>
               </select>
 
+              <div className={`flex items-center bg-stone-100 rounded-lg px-2 group hover:bg-stone-200 transition-colors ${toolbarPos.isVertical ? 'flex-col py-2' : 'h-[30px]'}`}>
+                <input 
+                  type="number" 
+                  value={fontSize} 
+                  onChange={(e) => setFontSize(Number(e.target.value))} 
+                  title="ขนาดฟอนต์ (แนะนำ 18-22)"
+                  className={`bg-transparent outline-none text-center font-bold text-stone-600 group-hover:text-[#A31D1D] appearance-none m-0 ${toolbarPos.isVertical ? 'w-8 text-[11px]' : 'w-7 text-[12px]'}`}
+                />
+                {!toolbarPos.isVertical && <span className="text-[10px] text-stone-400 font-bold tracking-wider">PX</span>}
+              </div>
+
               <button 
                 onClick={saveStory} 
                 className={`bg-[#A31D1D] text-white rounded-xl text-[11px] font-bold hover:bg-black transition-all shadow-lg active:scale-95 ${toolbarPos.isVertical ? 'mt-3 px-3 py-2 w-full' : 'ml-4 px-5 py-2.5'}`}
@@ -250,7 +276,7 @@ function WriterContent() {
         )}
         
         {isFolded && (
-          <div className="flex text-white font-['Pridi'] font-bold text-2xl">A</div>
+          <div className="flex w-full h-full items-center justify-center text-white font-['Pridi'] font-bold text-2xl">A</div>
         )}
       </div>
 
