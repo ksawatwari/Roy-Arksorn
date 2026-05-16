@@ -18,10 +18,24 @@ export default function Page() {
   const [userData, setUserData] = useState<any>(null);
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const [isDesktopProfileOpen, setIsDesktopProfileOpen] = useState(false);
+  const [isProfileMenuPinned, setIsProfileMenuPinned] = useState(false);
   
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Handle click outside for pinned profile menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuPinned(false);
+        setIsDesktopProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   
   // Real-time online users simulation
   useEffect(() => {
@@ -132,20 +146,29 @@ export default function Page() {
               หมวดหมู่ <ChevronDown className={`w-6 h-6 transition-transform ${isSubmenuOpen ? "rotate-180" : ""}`} />
             </button>
             <div className={`flex flex-col pl-4 mt-4 gap-4 border-l-2 border-stone-200 overflow-hidden transition-all duration-300 ${isSubmenuOpen ? "max-h-[500px]" : "max-h-0"}`}>
-              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Originals / ออริจินัล</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Original / ออริจินัล</Link>
               <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Essays / บทพิจารณ์</Link>
               <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Journal / วิถีอักษร</Link>
               <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Insights / พินิจภาพ</Link>
-              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Books Review / แว่วอักษร</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Book Review / แว่วอักษร</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">How-to / อักษรวิธี</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Curations / ป้ายยาของดี</Link>
+              <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Quotes / ถ้อยจารึก</Link>
             </div>
           </div>
           <Link href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
           <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
           
           {user && (
-            <button onClick={handleLogout} className="w-full mt-6 py-4 border-t border-stone-200 text-left text-stone-400 text-xl uppercase tracking-widest hover:text-zen-red transition">
-              ออกจากระบบ
-            </button>
+            <>
+              <hr className="border-stone-200 mt-2 mb-2" />
+              <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">โปรไฟล์ของฉัน</Link>
+              <Link href="/inbox" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">กล่องจดหมาย</Link>
+              <Link href="/achievements" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">ความสำเร็จ</Link>
+              <button onClick={handleLogout} className="w-full mt-6 py-4 border-t border-stone-200 text-left text-stone-400 text-xl uppercase tracking-widest hover:text-zen-red transition">
+                ออกจากระบบ
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -161,10 +184,14 @@ export default function Page() {
             {/* Dropdown Content */}
             <div className="absolute left-0 top-full pt-4 w-64 z-[1000] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
               <div className="bg-parchment border border-parchment-dark rounded shadow-2xl flex flex-col overflow-hidden">
-                <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Originals / ออริจินัล</Link>
-                <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Essays / บทพิจารณ์</Link>
-                <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Journal / วิถีอักษร</Link>
-                <Link href="#" className="px-6 py-4 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all">Books Review / แว่วอักษร</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Original / ออริจินัล</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Essays / บทพิจารณ์</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Journal / วิถีอักษร</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Insights / พินิจภาพ</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Book Review / แว่วอักษร</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">How-to / อักษรวิธี</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all border-b border-stone-200">Curations / ป้ายยาของดี</Link>
+                <Link href="#" className="px-6 py-3 text-ink-medium hover:text-zen-red hover:bg-zen-red/5 hover:pl-8 transition-all">Quotes / ถ้อยจารึก</Link>
               </div>
             </div>
           </div>
@@ -210,18 +237,35 @@ export default function Page() {
                 <button suppressHydrationWarning onClick={handleLogin} className="px-5 lg:px-6 py-1.5 lg:py-2 border-2 border-zen-red text-zen-red text-[16px] font-semibold rounded-full uppercase hover:bg-zen-red hover:text-white transition-all hover:scale-105 duration-300 whitespace-nowrap">ฝากตัว</button>
               </>
             ) : (
-                <div className="relative ml-2" onMouseLeave={() => setIsDesktopProfileOpen(false)}>
-                  <div className="cursor-pointer transition-transform hover:scale-105" onMouseEnter={() => setIsDesktopProfileOpen(true)}>
+                <div 
+                  className="relative ml-2" 
+                  ref={profileMenuRef}
+                  onMouseLeave={() => { if (!isProfileMenuPinned) setIsDesktopProfileOpen(false); }}
+                >
+                  <div 
+                    className="cursor-pointer transition-transform hover:scale-105" 
+                    onMouseEnter={() => setIsDesktopProfileOpen(true)}
+                    onClick={() => {
+                        setIsProfileMenuPinned(!isProfileMenuPinned);
+                        setIsDesktopProfileOpen(true);
+                    }}
+                  >
                     <img src={profileImg} className="w-10 h-10 rounded-full border-2 border-zen-red object-cover shadow-sm" alt="User" referrerPolicy="no-referrer" />
                   </div>
-                  {isDesktopProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-parchment border border-parchment-dark rounded shadow-xl overflow-hidden py-2" onMouseEnter={() => setIsDesktopProfileOpen(true)}>
+                  {(isDesktopProfileOpen || isProfileMenuPinned) && (
+                    <div className="absolute right-0 mt-2 w-48 bg-parchment border border-parchment-dark rounded shadow-xl overflow-hidden py-2">
                       <div className="px-4 py-3 border-b border-stone-200">
                         <p className="font-header text-zen-red text-[10px] tracking-widest uppercase mb-1">ผู้จารึกอักษร</p>
                         <p className="font-bold text-stone-800 text-sm truncate">{displayName}</p>
                       </div>
-                      <Link href="/profile" className="block w-full text-left px-4 py-3 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header border-b border-stone-200">
+                      <Link href="/profile" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header">
                         โปรไฟล์ของฉัน
+                      </Link>
+                      <Link href="/inbox" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header">
+                        กล่องจดหมาย
+                      </Link>
+                      <Link href="/achievements" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header border-b border-stone-200">
+                        ความสำเร็จ
                       </Link>
                       <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm font-header">
                         ออกจากระบบ
