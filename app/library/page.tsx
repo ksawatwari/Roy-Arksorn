@@ -76,9 +76,6 @@ export default function LibraryPage() {
   const [uploadProgress, setUploadProgress] = useState(-1);
 
   useEffect(() => {
-    const savedDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
-    setDocs(savedDocs.sort((a: any, b: any) => b.updated - a.updated));
-
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
@@ -87,9 +84,17 @@ export default function LibraryPage() {
         if (userDoc.exists()) {
           setUserData(userDoc.data());
         }
+        
+        const storageKey = `archivist_docs_${currentUser.uid}`;
+        const savedDocs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        setDocs(savedDocs.sort((a: any, b: any) => b.updated - a.updated));
+        
       } else {
         setUser(null);
         setUserData(null);
+        
+        const savedDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+        setDocs(savedDocs.sort((a: any, b: any) => b.updated - a.updated));
       }
     });
     return () => unsubscribe();
@@ -126,9 +131,10 @@ export default function LibraryPage() {
 
   const confirmDelete = () => {
     if (docIdToDelete !== null) {
-      let currentDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+      const storageKey = user ? `archivist_docs_${user.uid}` : 'archivist_docs';
+      let currentDocs = JSON.parse(localStorage.getItem(storageKey) || '[]');
       currentDocs = currentDocs.filter((d: any) => d.id !== docIdToDelete);
-      localStorage.setItem('archivist_docs', JSON.stringify(currentDocs));
+      localStorage.setItem(storageKey, JSON.stringify(currentDocs));
       setDocs(currentDocs.sort((a: any, b: any) => b.updated - a.updated));
       closeDeleteModal();
     }
