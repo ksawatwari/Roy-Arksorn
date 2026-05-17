@@ -7,6 +7,7 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { Camera, Edit2, Plus, Image as ImageIcon, X, Trash2, ArrowLeft, Crop as CropIcon, Check, ChevronRight, UserCircle, Settings, MoreHorizontal } from "lucide-react";
+import { CREATOR_ALIASES, CREATOR_BADGES } from "@/lib/creator_secrets";
 import Cropper from 'react-easy-crop';
 import { Area } from 'react-easy-crop';
 
@@ -426,7 +427,7 @@ export default function ProfilePage() {
                  <h1 className="text-3xl font-bold text-stone-800">{displayName}</h1>
                  {badge && (
                     <span className="px-2 py-0.5 border-2 border-stone-800 text-stone-800 font-bold text-[10px] tracking-wider uppercase rounded-sm flex items-center gap-1 shadow-[2px_2px_0px_#292524]">
-                      {ALL_BADGES.find(b => b.id === badge)?.label || badge}
+                      {[...ALL_BADGES, ...CREATOR_BADGES].find(b => b.id === badge)?.label || badge}
                     </span>
                  )}
               </div>
@@ -502,6 +503,15 @@ export default function ProfilePage() {
                           className={`px-3 py-1.5 flex items-center gap-2 rounded-sm border-2 text-sm font-bold transition-all ${unlockedBadges.includes(b.id) ? (badge === b.id ? 'bg-stone-800 text-white border-stone-800 shadow-[2px_2px_0px_#292524]' : 'bg-white text-stone-700 border-stone-800 hover:bg-stone-100') : 'bg-stone-100 text-stone-300 border-stone-200 cursor-not-allowed'}`}
                         >
                            {b.label}
+                        </button>
+                    ))}
+                    {CREATOR_BADGES.filter(b => unlockedBadges.includes(b.id)).map(b => (
+                        <button 
+                          key={b.id}
+                          onClick={() => setBadge(b.id)}
+                          className={`px-3 py-1.5 flex items-center gap-2 rounded-sm border-2 text-sm font-bold transition-all ${badge === b.id ? 'bg-gradient-to-r from-red-600 to-rose-500 text-white border-red-600 shadow-[2px_2px_0px_rgba(225,29,72,0.4)]' : 'bg-white text-red-600 border-red-200 hover:border-red-400 hover:bg-red-50'}`}
+                        >
+                           {b.label} 🌟
                         </button>
                     ))}
                 </div>
@@ -934,23 +944,30 @@ export default function ProfilePage() {
                         })}
                     </div>
 
-                    {unlockedAliases.includes("ภรรยาผู้บุกเบิกรอยอักษร") && (
-                       <>
-                         <p className="text-purple-600 mb-4 font-bold text-sm tracking-wide">🏆 ฉายาลับเฉพาะ (Secret Alias)</p>
-                         <div className="mb-8">
-                             <button
-                               onClick={() => setAlias("ภรรยาผู้บุกเบิกรอยอักษร")}
-                               className={`w-full py-4 px-3 rounded-xl text-sm text-center transition-all font-bold ${
-                                 alias === "ภรรยาผู้บุกเบิกรอยอักษร"
-                                   ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_8px_20px_rgba(147,51,234,0.3)] scale-105 z-10 ring-2 ring-purple-300' 
-                                   : 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100 hover:-translate-y-1'
-                               }`}
-                             >
-                               ภรรยาผู้บุกเบิกรอยอักษร
-                             </button>
-                         </div>
-                       </>
-                    )}
+                    {(() => {
+                       const secretAliasesUnlocked = unlockedAliases.filter(a => !ALL_ALIASES.includes(a));
+                       if (secretAliasesUnlocked.length === 0) return null;
+                       return (
+                         <>
+                           <p className="text-purple-600 mb-4 font-bold text-sm tracking-wide">🏆 ฉายาลับเฉพาะ (Secret Alias)</p>
+                           <div className="mb-8 grid grid-cols-2 md:grid-cols-3 gap-3">
+                               {secretAliasesUnlocked.map(sa => (
+                                 <button
+                                   key={sa}
+                                   onClick={() => setAlias(sa)}
+                                   className={`w-full py-3 px-3 rounded-xl text-xs md:text-sm text-center transition-all font-bold ${
+                                     alias === sa
+                                       ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-[0_8px_20px_rgba(147,51,234,0.3)] scale-105 z-10 ring-2 ring-purple-300' 
+                                       : 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-700 hover:from-purple-100 hover:to-pink-100 hover:-translate-y-1'
+                                   }`}
+                                 >
+                                   {sa}
+                                 </button>
+                               ))}
+                           </div>
+                         </>
+                       );
+                    })()}
 
                     <div className="flex justify-center">
                         <button 
