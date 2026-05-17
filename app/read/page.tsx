@@ -36,8 +36,9 @@ function ReadContent() {
   }, []);
 
   useEffect(() => {
-    const loadWorkObj = () => {
-      const docsStr = localStorage.getItem("archivist_docs");
+    const loadWorkObj = (uid: string | null) => {
+      const storageKey = uid ? `archivist_docs_${uid}` : "archivist_docs";
+      const docsStr = localStorage.getItem(storageKey);
       if (docsStr) {
         const allDocs = JSON.parse(docsStr);
         const activeDoc = allDocs.find((d: any) => d.id.toString() === idValue);
@@ -59,8 +60,10 @@ function ReadContent() {
           setAuthorBio(ud.bio || "ยังไม่มีเรื่องราวแนะนำตัว...");
           setAuthorImg(ud.avatarUrl || user.photoURL || `https://ui-avatars.com/api/?name=${ud.username || "User"}&background=A31D1D&color=fff`);
         }
+        loadWorkObj(user.uid);
+      } else {
+        loadWorkObj(null);
       }
-      loadWorkObj();
     });
 
     return () => unsubscribe();
