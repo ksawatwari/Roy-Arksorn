@@ -303,7 +303,7 @@ export default function Page() {
           เมื่อตัวอักษร... เริ่มเล่าเรื่อง
         </p>
         <div className="relative z-10 inline-flex items-center gap-3 px-6 py-2.5 rounded-full border border-[#F5F0E8]/15 bg-[#F5F0E8]/5 backdrop-blur-sm">
-          <div className="w-2 h-2 rounded-full animate-pulse bg-[#81b80b] shadow-[0_0_8px_rgba(184,134,11,0.6)]"></div>
+          <div className="w-2 h-2 rounded-full animate-pulse bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
           <p className="font-header text-sm tracking-wide text-[#DCC8AA]/80">
             ขณะนี้ออนไลน์ <span className="font-bold text-lg mx-0.5 text-[#F5EDE0]">{onlineUsers}</span> คน
           </p>
@@ -463,7 +463,7 @@ export default function Page() {
           <span className="font-header text-zen-red tracking-widest text-sm uppercase mb-4 block font-medium">จดหมายข่าวรอยอักษร</span>
           <h2 className="font-header text-4xl md:text-5xl text-stone-800 mb-6">รับข่าวสารและบทความก่อนใคร</h2>
           <p className="font-light text-stone-600 mb-10 text-lg leading-relaxed">
-            มาร่วมแลกเปลี่ยนมุมมองแห่งตัวอักษร เราจะส่งบทความ คติ ข้อคิด และอัปเดตใหม่ๆ ตรงถึงกล่องจดหมายของคุณด้วยภาษาที่งดงามตามแบบฉบับรอยอักษร
+            รับเรื่องราว แรงบันดาลใจ และอัปเดตใหม่ๆ ตรงถึงกล่องจดหมายคุณทุกสัปดาห์
           </p>
           <form suppressHydrationWarning className="relative flex items-center shadow-lg hover:shadow-xl transition-shadow duration-300 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
             <input 
@@ -489,16 +489,21 @@ export default function Page() {
         </div>
         <div className="flex justify-center gap-6 md:gap-10 mb-12">
           {["FB", "X", "IG"].map((social, idx) => (
-            <Link key={idx} href="#" className="group flex flex-col items-center gap-3">
+            <Link key={idx} href="#" className="group relative flex flex-col items-center gap-3">
               <div className="w-12 h-12 md:w-14 md:h-14 border border-stone-700/50 rounded-full flex items-center justify-center group-hover:border-zen-red group-hover:bg-zen-red/10 group-hover:text-zen-red transition-all text-xs font-header text-stone-400">
                 {social}
+              </div>
+              <div className="absolute top-full mt-2 bg-stone-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity font-header tracking-wider pointer-events-none whitespace-nowrap z-10">
+                 {social === "FB" ? "Facebook" : social === "X" ? "X (Twitter)" : "Instagram"}
               </div>
             </Link>
           ))}
         </div>
-        <p className="font-header text-[10px] tracking-[0.8em] uppercase opacity-40 text-stone-400">
-          รอยอักษร · RoyAksorn · พ.ศ. ๒๕๖๙
-        </p>
+        <div className="flex items-center justify-center gap-3 font-header text-xs tracking-widest uppercase opacity-40 text-stone-400">
+          <span>รอยอักษร</span>
+          <span>·</span>
+          <span>ROYAKSORN</span>
+        </div>
       </footer>
     </div>
   );
