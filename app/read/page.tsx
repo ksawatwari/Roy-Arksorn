@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { auth, db } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { ArrowLeft } from "lucide-react";
 
@@ -15,9 +15,25 @@ function ReadContent() {
 
   const [work, setWork] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [authorName, setAuthorName] = useState("");
   const [authorBio, setAuthorBio] = useState("");
   const [authorImg, setAuthorImg] = useState("");
+
+  const [isDesktopProfileOpen, setIsDesktopProfileOpen] = useState(false);
+  const [isProfileMenuPinned, setIsProfileMenuPinned] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuPinned(false);
+        setIsDesktopProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadWorkObj = () => {
@@ -34,6 +50,7 @@ function ReadContent() {
     
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setCurrentUser(user);
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
@@ -66,10 +83,55 @@ function ReadContent() {
     <div className="min-h-screen bg-[#fdfdfd] font-header pb-20 selection:bg-zen-red selection:text-white">
       {/* Nav */}
       <nav className="flex justify-between items-center px-6 md:px-10 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-200">
-        <button onClick={() => router.back()} className="text-stone-500 hover:text-zen-red flex items-center gap-2 font-bold transition-colors">
-          <ArrowLeft className="w-5 h-5"/> กลับ
-        </button>
-        <span className="text-sm font-bold tracking-widest text-[#A31D1D] uppercase">การอ่านรอยอักษร</span>
+        <div className="flex-1">
+          <button onClick={() => router.back()} className="text-stone-500 hover:text-zen-red flex items-center gap-2 font-bold transition-colors w-fit">
+            <ArrowLeft className="w-5 h-5"/> กลับ
+          </button>
+        </div>
+        <span className="text-sm font-bold tracking-widest text-[#A31D1D] uppercase hidden md:block">การอ่านรอยอักษร</span>
+        <div className="flex-1 flex justify-end">
+          {currentUser && (
+            <div 
+              className="relative ml-2" 
+              ref={profileMenuRef}
+              onMouseLeave={() => { if (!isProfileMenuPinned) setIsDesktopProfileOpen(false); }}
+            >
+              <div 
+                className="cursor-pointer transition-transform hover:scale-105" 
+                onMouseEnter={() => setIsDesktopProfileOpen(true)}
+                onClick={() => {
+                    setIsProfileMenuPinned(!isProfileMenuPinned);
+                    setIsDesktopProfileOpen(true);
+                }}
+              >
+                <img src={authorImg || `https://ui-avatars.com/api/?name=User&background=A31D1D&color=fff`} className="w-10 h-10 rounded-full border-2 border-zen-red object-cover shadow-sm bg-white" alt="User" referrerPolicy="no-referrer" />
+              </div>
+              {(isDesktopProfileOpen || isProfileMenuPinned) && (
+                <div className="absolute right-0 mt-2 w-52 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden py-2 z-[60]">
+                  <div className="px-4 py-3 border-b border-stone-100">
+                    <p className="text-zen-red text-[10px] tracking-widest uppercase mb-1 font-bold">ผู้จารึกอักษร</p>
+                    <p className="font-bold text-stone-800 text-sm truncate">{authorName}</p>
+                  </div>
+                  <Link href="/library" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm">
+                    งานเขียนของข้าพเจ้า
+                  </Link>
+                  <Link href="/profile" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm">
+                    โปรไฟล์ของฉัน
+                  </Link>
+                  <Link href="/inbox" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm">
+                    กล่องจดหมาย
+                  </Link>
+                  <button 
+                    onClick={async () => { await signOut(auth); router.push("/"); }} 
+                    className="w-full text-left px-4 py-3 text-zen-red font-bold hover:bg-zen-red/5 transition-colors text-sm border-t border-stone-100 mt-1"
+                  >
+                    ออกจากระบบ
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Header Image */}
@@ -80,8 +142,8 @@ function ReadContent() {
       )}
 
       {/* Content */}
-      <div className={`max-w-3xl mx-auto px-6 md:px-10 ${work.cover ? '-mt-16' : 'mt-16'} relative z-10`}>
-        <div className={`bg-white ${work.cover ? 'rounded-t-3xl md:rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.04)] border-t border-x border-stone-100' : ''} px-6 py-12 md:px-16 md:py-16`}>
+      <div className={`max-w-4xl mx-auto px-0 md:px-10 ${work.cover ? '-mt-12 md:-mt-20' : 'mt-0 md:mt-16'} relative z-10`}>
+        <div className={`bg-white ${work.cover ? 'rounded-t-[32px] md:rounded-t-[40px] shadow-[0_-10px_40px_rgba(0,0,0,0.04)] border-t md:border-x border-stone-100' : ''} px-6 py-12 md:px-20 md:py-20 min-h-screen md:min-h-0`}>
           
           <div className="mb-12 text-center">
             {work.category && (
