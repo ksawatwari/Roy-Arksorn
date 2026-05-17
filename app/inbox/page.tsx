@@ -7,6 +7,8 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
+import { CREATOR_ALIASES, CREATOR_BADGES } from "@/lib/creator_secrets";
+
 interface Letter {
   id: string;
   title: string;
@@ -15,6 +17,7 @@ interface Letter {
   content: string;
   read: boolean;
   isSpecial?: boolean;
+  specialType?: 'wife' | 'creator_aliases' | 'creator_badges';
 }
 
 const INITIAL_LETTERS: Letter[] = [
@@ -66,6 +69,7 @@ export default function InboxPage() {
 
         const nameToCheck = currentData?.username || currentUser.displayName || "";
         const isEligibleForWifeAlias = nameToCheck.includes("_");
+        const isCreator = currentUser.email === "meenoise123@gmail.com";
 
         const stored = localStorage.getItem(`ROY_AKSORN_INBOX_${currentUser.uid}`);
         let parsedLetters: Letter[] = stored ? JSON.parse(stored) : INITIAL_LETTERS;
@@ -92,6 +96,59 @@ export default function InboxPage() {
 ผู้สร้างรอยอักษร`,
                read: false,
                isSpecial: true,
+               specialType: 'wife'
+             },
+             ...parsedLetters
+           ];
+           localStorage.setItem(`ROY_AKSORN_INBOX_${currentUser.uid}`, JSON.stringify(parsedLetters));
+        }
+
+        if (isCreator && !parsedLetters.find((l: Letter) => l.id === "special-creator-aliases")) {
+           parsedLetters = [
+             {
+               id: "special-creator-aliases",
+               title: "สาส์นลับถึงผู้ริเริ่มระบบ...",
+               date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+               sender: "ระบบศูนย์กลาง",
+               content: `เรียน ท่านผู้สร้างสรรค์รอยอักษร,
+
+ระบบตรวจพบรหัสประจำตัวของผู้ก่อตั้ง การกลับมาของท่านทำให้คลังอักษรแห่งนี้สมบูรณ์แบบยิ่งขึ้น 
+
+เพื่อเป็นเกียรติแก่ผู้ริเริ่มและพัฒนาพื้นที่แห่งนี้ ระบบได้เตรียมฉายาลับเฉพาะ 99 ฉายา ที่จะไม่มีผู้ใดในสารบบสามารถครอบครองได้นอกจากท่าน 
+
+ขอให้ท่านกดรับสิทธิ์นี้ เมื่อรับแล้ว ฉายาทั้ง 99 ฉายา จะถูกเพิ่มเข้าไปในหน้าจอแก้ไขโปรไฟล์ของท่านในหมวด "ฉายาลับ" ทันที
+
+ด้วยความเคารพอย่างสูง,
+ระบบศูนย์กลาง`,
+               read: false,
+               isSpecial: true,
+               specialType: 'creator_aliases'
+             },
+             ...parsedLetters
+           ];
+           localStorage.setItem(`ROY_AKSORN_INBOX_${currentUser.uid}`, JSON.stringify(parsedLetters));
+        }
+
+        if (isCreator && !parsedLetters.find((l: Letter) => l.id === "special-creator-badges")) {
+           parsedLetters = [
+             {
+               id: "special-creator-badges",
+               title: "เข็มกลัดแห่งผู้บุกเบิก (Badges)",
+               date: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }),
+               sender: "ระบบศูนย์กลาง",
+               content: `เรียน ท่านผู้สร้างสรรค์รอยอักษร,
+
+นอกจากฉายาพิเศษแล้ว ระบบยังได้จัดเตรียมเข็มกลัดเกียรติยศ (Badges) แบบเฉพาะกิจ 5 เหรียญตราที่จะมีเฉพาะท่านเท่านั้นที่ผู้ครอบครอง 
+
+เหรียญตราทั้ง 5 นี้ประกอบด้วยเหรียญตรา Official และเหรียญตราเฉพาะของผู้พัฒนาระบบ
+
+ขอให้ท่านกดรับสิทธิ์นี้ เมื่อรับแล้ว เข็มกลัดเหล่านี้จะปรากฏให้ท่านเลือกใช้งานได้ที่หน้าแก้ไขโปรไฟล์
+
+ด้วยความเคารพอย่างสูง,
+ระบบศูนย์กลาง`,
+               read: false,
+               isSpecial: true,
+               specialType: 'creator_badges'
              },
              ...parsedLetters
            ];
@@ -146,36 +203,108 @@ export default function InboxPage() {
     setIsClaiming(false);
   };
 
+  const handleClaimCreatorAliases = async () => {
+    if (!user || isClaiming || !userData) return;
+    setIsClaiming(true);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const currentAliases = userData.unlockedAliases || [];
+      const newAliases = CREATOR_ALIASES.filter(a => !currentAliases.includes(a));
+      
+      if (newAliases.length > 0) {
+        const updatedAliases = [...currentAliases, ...newAliases];
+        await updateDoc(userRef, { 
+           unlockedAliases: updatedAliases,
+           hasClaimedCreatorAliases: true 
+        });
+        setUserData({ ...userData, unlockedAliases: updatedAliases, hasClaimedCreatorAliases: true });
+        alert("ยินดีด้วย! ฉายาลับ 99 ฉายา ได้ถูกเพิ่มลงในคลังฉายาของท่านแล้ว");
+      } else {
+        alert("ท่านได้รับฉายาทั้งหมดไปแล้วครับ");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("เกิดข้อผิดพลาดในการรับฉายา");
+    }
+    setIsClaiming(false);
+  };
+
+  const handleClaimCreatorBadges = async () => {
+    if (!user || isClaiming || !userData) return;
+    setIsClaiming(true);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const currentBadges = userData.unlockedBadges || ['novice'];
+      const newBadgeIds = CREATOR_BADGES.map(b => b.id).filter(id => !currentBadges.includes(id));
+      
+      if (newBadgeIds.length > 0) {
+        const updatedBadges = [...currentBadges, ...newBadgeIds];
+        await updateDoc(userRef, { 
+           unlockedBadges: updatedBadges,
+           hasClaimedCreatorBadges: true 
+        });
+        setUserData({ ...userData, unlockedBadges: updatedBadges, hasClaimedCreatorBadges: true });
+        alert("ยินดีด้วย! ท่านได้รับเข็มกลัดพิเศษทั้ง 5 อันแล้ว");
+      } else {
+        alert("ท่านได้รับเข็มกลัดทั้งหมดไปแล้วครับ");
+      }
+    } catch(e) {
+      console.error(e);
+      alert("เกิดข้อผิดพลาดในการรับเข็มกลัด");
+    }
+    setIsClaiming(false);
+  };
+
   if (loading) {
      return <div className="min-h-screen bg-stone-100 flex items-center justify-center font-header">กำลังโหลด...</div>;
   }
 
   const selectedLetter = letters.find(l => l.id === selectedLetterId);
 
-  const renderLetterContent = (letter: Letter) => (
-    <>
-      <div className="max-w-2xl text-stone-800 text-lg leading-[2.2] font-light whitespace-pre-wrap">
-        {letter.content}
-      </div>
-      {letter.isSpecial && (
-        <div className="mt-10 pt-8 border-t border-stone-200/50 flex justify-center">
-            {userData?.hasClaimedWifeAlias ? (
-               <div className="bg-stone-100 border border-stone-200 px-6 py-3 rounded-xl text-stone-500 font-bold flex items-center gap-2">
-                 ฉันได้รับของขวัญชิ้นนี้แล้ว
-               </div>
-            ) : (
-               <button 
-                  onClick={handleClaimSpecialAlias}
-                  disabled={isClaiming}
-                  className="bg-zen-red border border-zen-red px-8 py-4 rounded-full shadow-[0_10px_30px_rgba(163,29,29,0.2)] text-white hover:bg-[#8f1717] hover:shadow-xl hover:-translate-y-1 transition-all active:translate-y-0 font-bold flex items-center gap-3 text-lg"
-               >
-                 <Gift className="w-6 h-6"/> {isClaiming ? "กำลังรับของขวัญ..." : "กดรับฉายาลับ"}
-               </button>
-            )}
+  const renderLetterContent = (letter: Letter) => {
+    let hasClaimed = false;
+    let handleClaim = handleClaimSpecialAlias;
+    let buttonLabel = "กดรับฉายาลับ";
+
+    if (letter.specialType === 'wife') {
+       hasClaimed = !!userData?.hasClaimedWifeAlias;
+       handleClaim = handleClaimSpecialAlias;
+       buttonLabel = "กดรับฉายาลับ";
+    } else if (letter.specialType === 'creator_aliases') {
+       hasClaimed = !!userData?.hasClaimedCreatorAliases;
+       handleClaim = handleClaimCreatorAliases;
+       buttonLabel = "กดรับฉายาผู้สร้างทั้ง 99";
+    } else if (letter.specialType === 'creator_badges') {
+       hasClaimed = !!userData?.hasClaimedCreatorBadges;
+       handleClaim = handleClaimCreatorBadges;
+       buttonLabel = "กดรับเข็มกลัดผู้สร้าง";
+    }
+
+    return (
+      <>
+        <div className="max-w-2xl text-stone-800 text-lg leading-[2.2] font-light whitespace-pre-wrap">
+          {letter.content}
         </div>
-      )}
-    </>
-  );
+        {letter.isSpecial && (
+          <div className="mt-10 pt-8 border-t border-stone-200/50 flex justify-center">
+              {hasClaimed ? (
+                 <div className="bg-stone-100 border border-stone-200 px-6 py-3 rounded-xl text-stone-500 font-bold flex items-center gap-2">
+                   ฉันได้รับของขวัญชิ้นนี้แล้ว
+                 </div>
+              ) : (
+                 <button 
+                    onClick={handleClaim}
+                    disabled={isClaiming}
+                    className="bg-zen-red border border-zen-red px-8 py-4 rounded-full shadow-[0_10px_30px_rgba(163,29,29,0.2)] text-white hover:bg-[#8f1717] hover:shadow-xl hover:-translate-y-1 transition-all active:translate-y-0 font-bold flex items-center gap-3 text-lg"
+                 >
+                   <Gift className="w-6 h-6"/> {isClaiming ? "กำลังรับของขวัญ..." : buttonLabel}
+                 </button>
+              )}
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#fdfdfd] font-header pb-20">
