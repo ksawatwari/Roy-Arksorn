@@ -895,18 +895,18 @@ export default function ProfilePage() {
       {/* Alias Modal */}
       {isAliasModalOpen && !isAllAliasGridOpen && (
         <div className="fixed inset-0 bg-stone-900/60 z-[6000] p-4 flex flex-col justify-center items-center backdrop-blur-md">
-            <div className="bg-gradient-to-br from-white/95 to-white/80 w-full max-w-2xl p-8 rounded-3xl shadow-2xl border border-white relative overflow-hidden backdrop-blur-xl">
-                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-zen-red/10 rounded-full blur-3xl"></div>
-                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-zen-red/10 rounded-full blur-3xl"></div>
+            <div className="bg-gradient-to-br from-white/95 to-white/80 w-full max-w-2xl p-6 md:p-8 rounded-3xl shadow-2xl border border-white relative overflow-hidden backdrop-blur-xl max-h-[90vh] flex flex-col">
+                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-zen-red/10 rounded-full blur-3xl pointer-events-none"></div>
+                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-zen-red/10 rounded-full blur-3xl pointer-events-none"></div>
                  
-                 <div className="relative z-10">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-3xl font-bold text-stone-900 tracking-tight">เลือกฉายาประจำตัว</h3>
-                        <button onClick={() => setIsAliasModalOpen(false)} className="text-stone-400 hover:text-zen-red transition-colors p-2 bg-stone-100 rounded-full">
-                            <X className="w-5 h-5"/>
-                        </button>
-                    </div>
+                 <div className="relative z-10 flex justify-between items-center mb-6 shrink-0">
+                      <h3 className="text-3xl font-bold text-stone-900 tracking-tight">เลือกฉายาประจำตัว</h3>
+                      <button onClick={() => setIsAliasModalOpen(false)} className="text-stone-400 hover:text-zen-red transition-colors p-2 bg-stone-100 rounded-full">
+                          <X className="w-5 h-5"/>
+                      </button>
+                 </div>
 
+                 <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
                     <div className="flex items-center gap-3 mb-6 bg-white/50 p-4 rounded-xl border border-stone-200/50">
                         <input 
                             type="checkbox" 
