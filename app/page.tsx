@@ -502,11 +502,14 @@ export default function Page() {
             </Link>
           ))}
         </div>
-        <div className="flex items-center justify-center gap-3 font-header text-xs tracking-widest uppercase opacity-40 text-stone-400">
+        <div className="flex items-center justify-center gap-3 font-header text-xs tracking-widest uppercase opacity-40 text-stone-400 mb-4">
           <span>รอยอักษร</span>
           <span>·</span>
           <span>ROYAKSORN</span>
         </div>
+        <p className="font-header text-xs tracking-wider opacity-30 text-stone-400">
+          &copy; {new Date().getFullYear()} RoyAksorn
+        </p>
       </footer>
     </div>
   );
