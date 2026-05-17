@@ -143,15 +143,17 @@ export default function ProfilePage() {
   const postImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
-      setLocalDocs(savedDocs);
-    }
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         await fetchUserData(currentUser.uid);
         await fetchPosts(currentUser.uid);
+        
+        if (typeof window !== 'undefined') {
+          const storageKey = `archivist_docs_${currentUser.uid}`;
+          const savedDocs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          setLocalDocs(savedDocs);
+        }
       } else {
         router.push("/");
       }
