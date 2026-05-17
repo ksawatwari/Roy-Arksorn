@@ -156,12 +156,12 @@ export default function Page() {
               <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500">Quotes / ถ้อยจารึก</Link>
             </div>
           </div>
-          <Link href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
           <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">เกี่ยวกับ</Link>
           
           {user && (
             <>
               <hr className="border-stone-200 mt-2 mb-2" />
+              <Link href="/library" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">งานเขียนของข้าพเจ้า</Link>
               <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">โปรไฟล์ของฉัน</Link>
               <Link href="/inbox" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">กล่องจดหมาย</Link>
               <Link href="/achievements" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl text-stone-800 hover:text-zen-red transition-colors">ความสำเร็จ</Link>
@@ -195,7 +195,7 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <Link href="/library" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">งานเขียนของข้าพเจ้า</Link>
+          {user && <Link href="/library" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">งานเขียนของข้าพเจ้า</Link>}
           <Link href="#" className="relative z-20 text-[16px] font-medium text-stone-600 hover:text-zen-red transition-colors whitespace-nowrap">เกี่ยวกับ</Link>
         </div>
 
@@ -258,6 +258,9 @@ export default function Page() {
                         <p className="font-header text-zen-red text-[10px] tracking-widest uppercase mb-1">ผู้จารึกอักษร</p>
                         <p className="font-bold text-stone-800 text-sm truncate">{displayName}</p>
                       </div>
+                      <Link href="/library" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header">
+                        งานเขียนของข้าพเจ้า
+                      </Link>
                       <Link href="/profile" className="block w-full text-left px-4 py-2.5 text-stone-700 hover:text-zen-red hover:bg-zen-red/5 transition-colors text-sm font-header">
                         โปรไฟล์ของฉัน
                       </Link>
@@ -481,7 +484,7 @@ export default function Page() {
       </section>
 
       {/* Footer */}
-      <footer className="ink-wash text-stone-500 py-20 text-center relative z-20">
+      <footer className="text-stone-400 py-20 text-center relative z-20" style={{ background: 'radial-gradient(100% 100% at 50% 0%, #2A2720 0%, #15130E 40%, #050505 100%)' }}>
         <div className="flex justify-center gap-3 mb-8">
           <div className="w-16 h-[1px] mt-2 bg-gradient-to-r from-transparent to-white/15"></div>
           <span className="text-white/20 text-sm">☸</span>
