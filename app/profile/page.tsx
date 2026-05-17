@@ -799,7 +799,7 @@ export default function ProfilePage() {
               <h3 className="text-xl font-bold text-stone-900">คอลเลกชันปกพื้นฐาน</h3>
               <button onClick={() => setIsBasicCoverModalOpen(false)} className="text-stone-400 hover:text-zen-red p-2 bg-white rounded-full"><X className="w-5 h-5"/></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col gap-5 bg-white">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 flex flex-col gap-5 bg-white">
               {BASIC_COVERS.map(cover => (
                 <div 
                   key={cover} 
@@ -873,7 +873,7 @@ export default function ProfilePage() {
               </button>
             </div>
             
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 overflow-y-auto pr-2 flex-1 pb-4">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 overflow-y-auto custom-scrollbar pr-2 flex-1 pb-4">
               {Array.from({ length: 96 }).map((_, i) => {
                 const seed = `Lorelei-Final-${(i + 1) * 137}`;
                 const url = `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=ffffff`;
@@ -1000,7 +1000,7 @@ export default function ProfilePage() {
                     </button>
                  </div>
 
-                 <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-stone-100">
+                 <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 bg-stone-100">
                     <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                         {ALL_ALIASES.map((opt) => {
                             const isUnlocked = unlockedAliases.includes(opt);
