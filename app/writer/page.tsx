@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from "react
 import { useRouter, useSearchParams } from "next/navigation";
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignJustify, X, Plus, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 export default function WriterPage() {
   return (
@@ -19,6 +21,18 @@ function WriterContent() {
   const idValue = searchParams.get('id');
   const catValue = searchParams.get('cat');
   
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
+
+  // Authentication Effect
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoaded(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const [currentId, setCurrentId] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   
@@ -38,30 +52,33 @@ function WriterContent() {
   const startPosRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    const id = idValue || Date.now().toString();
-    setCurrentId(id);
-    if (catValue) setCategory(catValue);
+    if (!authLoaded) return;
+    
+    setTimeout(() => {
+      const id = idValue || Date.now().toString();
+      setCurrentId(id);
+      if (catValue) setCategory(catValue);
 
-    const savedData = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
-    const activeDoc = savedData.find((d: any) => d.id == id);
+      const storageKey = user ? `archivist_docs_${user.uid}` : 'archivist_docs';
+      const savedData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const activeDoc = savedData.find((d: any) => d.id == id);
 
-    if (activeDoc) {
-      setTitle(activeDoc.title || "");
-      setExcerpt(activeDoc.excerpt || "");
-      if (activeDoc.category) setCategory(activeDoc.category);
-      if (activeDoc.fontSize) setFontSize(activeDoc.fontSize);
-      if (editorRef.current) {
-        editorRef.current.innerHTML = activeDoc.content || "";
+      if (activeDoc) {
+        setTitle(activeDoc.title || "");
+        setExcerpt(activeDoc.excerpt || "");
+        if (activeDoc.category) setCategory(activeDoc.category);
+        if (activeDoc.fontSize) setFontSize(activeDoc.fontSize);
+        if (editorRef.current) {
+          editorRef.current.innerHTML = activeDoc.content || "";
+        }
+        if (activeDoc.cover) {
+           setCoverStr(activeDoc.cover);
+        }
       }
-      if (activeDoc.cover) {
-         setCoverStr(activeDoc.cover);
-      }
-    }
-  }, [idValue, catValue]);
+    }, 0);
+  }, [idValue, catValue, authLoaded, user]);
 
   // Handle Dragging
-  const handleMouseUpRef = useRef<() => void>(() => {});
-
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!toolbarRef.current) return;
     let targetX = e.clientX - startPosRef.current.x;
@@ -84,11 +101,11 @@ function WriterContent() {
     setToolbarPos({ x: targetX, y: targetY, isVertical });
   }, []);
 
-  handleMouseUpRef.current = () => {
+  function handleMouseUp() {
     setIsDragging(false);
     document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUpRef.current);
-  };
+    document.removeEventListener('mouseup', handleMouseUp);
+  }
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.toolbar-handle')) {
@@ -100,7 +117,7 @@ function WriterContent() {
           y: e.clientY - rect.top
         };
         document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUpRef.current);
+        document.addEventListener('mouseup', handleMouseUp);
       }
     }
   };
@@ -120,7 +137,8 @@ function WriterContent() {
     const titleInput = title || "Untitled Story";
     const contentBody = editorRef.current?.innerHTML || "";
 
-    let allDocs = JSON.parse(localStorage.getItem('archivist_docs') || '[]');
+    const storageKey = user ? `archivist_docs_${user.uid}` : 'archivist_docs';
+    let allDocs = JSON.parse(localStorage.getItem(storageKey) || '[]');
     const targetIndex = allDocs.findIndex((d: any) => d.id == currentId);
 
     const storyObject = {
@@ -141,7 +159,7 @@ function WriterContent() {
     }
 
     try {
-        localStorage.setItem('archivist_docs', JSON.stringify(allDocs));
+        localStorage.setItem(storageKey, JSON.stringify(allDocs));
         setAlertMsg('จารึกรอยอักษรสำเร็จแล้ว!');
         setAlertType('success');
     } catch (e) {
